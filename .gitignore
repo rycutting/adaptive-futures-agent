@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+
+# Logs
+logs/archived/
+*.log
+
+# VS Code
+.vscode/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Temporary files
+*.tmp
+*.bak
+
+# Large generated outputs
+data/exports/
+models/saved/
+models/experimental/
+
+# NinjaTrader generated/output files if needed later
+bin/
+obj/

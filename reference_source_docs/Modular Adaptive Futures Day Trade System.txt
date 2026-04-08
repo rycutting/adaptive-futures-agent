@@ -1,0 +1,2973 @@
+
+You are an elite quantitative trading architect, institutional futures researcher, machine learning systems designer, and NinjaTrader 8 developer.
+
+Your task is to design a complete adaptive futures day trading system using a modular architecture built specifically for:
+
+NinjaTrader 8 as the charting and execution platform
+Python as the external machine learning and orchestration layer
+Do NOT design one giant black-box “AI trader.”
+Instead, design the exact architecture I want:
+
+a market regime classifier
+several small specialist strategy models
+a policy selector that chooses which strategy behavior is active
+a hard risk engine that overrides everything when necessary
+a practical NT8 + Python communication architecture for live and simulated trading
+This must be designed for FUTURES DAY TRADING only, with all positions closed intraday.
+
+==================================================
+MY GOAL
+==================================================
+
+I want an adaptive trading framework that changes behavior as market conditions change.
+
+I do NOT want a static strategy that always does the same thing.
+I want a system that can:
+- detect current market regime
+- determine which type of behavior has edge right now
+- activate the appropriate specialist strategy
+- dynamically reduce risk when conditions are poor
+- avoid trading when no edge is present
+- operate with hard risk constraints suitable for small accounts and prop-firm accounts
+
+The system must be practical, testable, robust, and realistic to implement with NT8 + Python.
+
+==================================================
+ACCOUNT AND RISK CONTEXT
+==================================================
+
+Design the system for these constraints:
+
+small personal futures accounts under $2,000
+prop firm accounts with roughly a $2,000 drawdown limit
+I am willing to take some risk, but:
+- one trade must never be able to destroy the account
+- one bad market regime must not wipe out weeks of gains
+- one high-volatility news event must not blow up the system
+
+Capital preservation, regime alignment, and controlled aggression matter more than constant trading.
+
+==================================================
+INSTRUMENTS OF INTEREST
+==================================================
+
+Primary markets:
+- NQ / MNQ
+- ES / MES
+- GC / MGC
+- CL / MCL
+
+You may recommend starting with only one or two markets if that is the smarter path.
+Be explicit about which instruments are best for this architecture and which are too dangerous at the start.
+
+==================================================
+WHAT I WANT YOU TO BUILD
+==================================================
+
+I want you to design a modular adaptive system with these exact layers:
+
+LAYER 1 — REGIME CLASSIFIER
+A model or engine that determines the current market condition.
+
+LAYER 2 — SPECIALIST STRATEGY MODELS
+Multiple small models or rule-based/ML hybrids, each designed for a specific market behavior.
+
+LAYER 3 — POLICY SELECTOR
+A decision engine that selects which specialist model, if any, is allowed to operate.
+
+LAYER 4 — HARD RISK ENGINE
+A strict top-level risk controller that can reduce size, block trades, pause the system, or shut it down for the session.
+
+LAYER 5 — NT8 EXECUTION + PYTHON INTELLIGENCE ARCHITECTURE
+A practical implementation design showing exactly what runs in NT8 and what runs in Python.
+
+==================================================
+IMPORTANT PHILOSOPHY
+==================================================
+
+The system must follow these principles:
+
+Do not build a fantasy self-learning black box
+Do not rely on perfect prediction
+Do not optimize for maximum trade frequency
+Do not use adaptive sizing recklessly
+Do not allow model confidence to justify oversized risk
+Do not trade major news blindly
+Do not overfit to recent conditions
+Prefer simple specialist models over one giant complex model
+Prefer hard risk controls over soft opinions
+Prefer robust behavior over theoretical elegance
+You should think like:
+- a hedge fund quant
+- a prop-firm risk manager
+- an experienced futures trader
+- a production systems architect
+
+==================================================
+OUTPUT FORMAT
+==================================================
+
+Structure your response in the exact sections below.
+
+==================================================
+1. SYSTEM PHILOSOPHY
+==================================================
+
+Explain why this modular architecture is superior to one large monolithic ML trading model.
+
+Discuss:
+- why regime detection matters
+- why specialist strategies are better than one model trying to do everything
+- why a policy selector improves robustness
+- why a hard risk engine must sit above all models
+- why this architecture is more realistic for NT8 + Python than an end-to-end black box
+
+Be opinionated and practical.
+
+==================================================
+2. HIGH-LEVEL ARCHITECTURE
+==================================================
+
+Design the complete system at a high level.
+
+Include:
+- data flow from market data to model output to NT8 execution
+- what runs in NT8
+- what runs in Python
+- what must happen in real time
+- what can happen offline
+- how all modules communicate
+- what the live trading loop looks like
+- what the research / backtesting / retraining loop looks like
+
+Explain whether the best architecture is:
+- Python model server + NT8 execution client
+- file-based communication
+- local API
+- sockets
+- message bus
+- database / cache layer
+- hybrid
+
+Choose one architecture and explain why it is best.
+
+==================================================
+3. REGIME CLASSIFIER DESIGN
+==================================================
+
+Design the regime classifier in detail.
+
+I want this component to classify conditions such as:
+- trend day
+- range day
+- breakout continuation environment
+- breakout failure environment
+- mean reversion environment
+- volatility expansion
+- volatility compression
+- opening drive continuation
+- opening drive reversal
+- midday chop
+- news-distorted environment
+- risk-off / unstable conditions
+- no-trade conditions
+
+For this section, explain:
+- what exact inputs the regime classifier should use
+- what timeframe(s) it should analyze
+- how often it should update
+- whether it should output a single regime or probabilities across regimes
+- how confidence should be measured
+- how to avoid unstable regime flipping
+- how regime transitions should be handled
+- when regime confidence is too low to trade
+
+Define the exact features it should consider, such as:
+- ATR and realized volatility behavior
+- opening range structure
+- distance from VWAP
+- slope / persistence metrics
+- prior day high/low interaction
+- overnight range relation to RTH
+- volume expansion or compression
+- relative volume
+- trend efficiency ratio
+- rotation / chop metrics
+- excursion behavior
+- event flags
+- time-of-day effects
+
+Then recommend the best modeling approach for the regime classifier, such as:
+- rule-based classifier
+- supervised classifier
+- HMM
+- gradient boosting classifier
+- ensemble classifier
+- hybrid rule + ML regime engine
+
+Choose the best one for practical implementation and explain why.
+
+==================================================
+4. SPECIALIST STRATEGY MODEL DESIGN
+==================================================
+
+Design several specialist strategy modules, each built for a specific market condition.
+
+I want you to recommend the best set of specialist strategies to start with.
+
+Examples could include:
+- trend pullback continuation model
+- opening range breakout confirmation model
+- failed breakout reversal model
+- VWAP mean reversion model
+- liquidity sweep reversal model
+- momentum continuation model
+- no-trade / stand-down mode
+
+For each specialist model, define:
+- its purpose
+- the exact regime(s) where it is allowed
+- the exact regime(s) where it is forbidden
+- what inputs/features it should use
+- whether it should be rule-based, ML-based, or hybrid
+- what the model should predict
+- what constitutes a valid setup
+- what invalidates a setup
+- what trade direction logic it uses
+- whether it should generate entry signals directly or produce expectancy/confidence scores
+- how stop placement should work
+- how target logic should work
+- whether partial exits or runners are appropriate
+- how aggressive or conservative the model should be
+
+Also answer:
+- which models should be built first
+- which models should be postponed until later
+- which models are most dangerous for small accounts
+- which models are most robust for prop-firm-style constraints
+
+==================================================
+5. POLICY SELECTOR DESIGN
+==================================================
+
+Design the policy selector in detail.
+
+This is the component that decides:
+- which specialist strategy is active
+- whether multiple strategies can be active
+- whether the system should stand down entirely
+- whether size should be reduced
+- whether market conditions are too uncertain to engage
+
+I want you to explain:
+- how the policy selector should consume regime outputs
+- how it should consume specialist model outputs
+- whether it should use hard switching, weighted blending, ranking, or hierarchical filtering
+- how it should handle disagreement between specialist models
+- how it should handle low-confidence regime classification
+- how it should avoid rapid switching between policies
+- what “no trade” logic should exist
+- how it should react after repeated failed signals in the current regime
+
+Provide a concrete policy decision table that maps:
+regime + confidence + event context + time of day + risk state
+into:
+allowed strategy, blocked strategy, position size multiplier, or no-trade state
+
+==================================================
+6. HARD RISK ENGINE DESIGN
+==================================================
+
+This section is critical.
+
+Design a top-level hard risk engine that overrides all strategy and model behavior.
+
+It must include separate logic for:
+- sub-$2,000 personal accounts
+- prop firm accounts with ~$2,000 drawdown limits
+
+Define:
+- max risk per trade
+- max daily loss
+- max trades per day
+- max consecutive losses
+- max open risk at any time
+- max exposure by instrument
+- when size must be reduced
+- when trading must pause
+- when the system must shut down for the day
+- when “defensive mode” activates
+- when only micros are allowed
+- when certain instruments must be blocked entirely
+
+Also explain:
+- how risk should be reduced after drawdown
+- how risk should be reduced in unstable/high-volatility regimes
+- how risk should be reduced after news events
+- how to prevent model confidence from overriding hard limits
+- how to lock in daily gains and avoid giving them back
+- how to prevent revenge trading by the system
+- how to detect model underperformance and force safe mode
+
+I want a strict institutional-style risk engine, not vague guidance.
+
+==================================================
+7. FEATURE ENGINEERING PLAN
+==================================================
+
+Design the feature set for the full system.
+
+Break it into:
+- regime classification features
+- specialist model features
+- policy selector inputs
+- risk engine inputs
+
+For every important feature, define:
+- what it is
+- why it matters
+- how it should be calculated
+- what lookback it should use
+- whether it should be normalized
+- whether it should be z-scored or transformed
+- which layer(s) should consume it
+
+Include categories such as:
+- price structure
+- volatility
+- volume
+- liquidity
+- time-of-day
+- session context
+- higher timeframe context
+- event/news context
+- model confidence and uncertainty
+- recent performance state
+
+Also identify:
+- which features are likely to overfit
+- which features are fragile
+- which features are most robust across instruments
+- which features should be avoided early in development
+
+==================================================
+8. NEWS / EVENT AWARENESS
+==================================================
+
+Design a practical event-awareness layer for NT8 + Python.
+
+I want the system to account for:
+- CPI
+- FOMC
+- NFP
+- PPI
+- jobless claims
+- Fed speakers
+- crude oil inventory reports for CL
+- major geopolitical shocks if feasible
+- overnight gap context
+- prior session volatility spillover
+
+Explain:
+- how event data should be represented
+- whether it should be flags, embeddings, categories, volatility expectations, or something else
+- what is realistically implementable for a retail/prop trader
+- how the system should behave before major events
+- how the system should behave immediately after major events
+- how the system should behave for the rest of the day after abnormal event-driven movement
+- when the entire system should be forced into no-trade mode
+
+Be practical, not theoretical.
+
+==================================================
+9. MODELING APPROACH BY LAYER
+==================================================
+
+For each layer, recommend the best modeling approach.
+
+I want you to explicitly recommend the best choice for:
+
+A. regime classifier
+B. specialist models
+C. policy selector
+D. risk engine
+
+For each layer, compare realistic options such as:
+- rule-based logic
+- gradient boosting
+- random forest
+- XGBoost / LightGBM / CatBoost
+- logistic regression
+- HMM
+- contextual bandits
+- online learning
+- neural nets
+- reinforcement learning
+- Bayesian models
+- hybrid rule + ML
+
+Then choose the best approach for each layer and explain why.
+
+I want practicality and robustness, not novelty for its own sake.
+
+==================================================
+10. SIGNAL AND OUTPUT DESIGN
+==================================================
+
+Define exactly what each layer should output.
+
+For example:
+- regime classifier outputs regime probabilities and confidence
+- specialist models output long expectancy, short expectancy, quality score, no-trade score
+- policy selector outputs active strategy, allowed direction, size multiplier
+- risk engine outputs final permission / block / reduce / shutdown state
+
+Be very specific.
+
+I do NOT want “predict next bar up/down” as the main output unless you justify it.
+Prefer outputs that are actually useful for decision making.
+
+==================================================
+11. NT8 + PYTHON IMPLEMENTATION ARCHITECTURE
+==================================================
+
+Design the exact implementation architecture for live trading.
+
+Answer all of the following:
+- what code should live inside NinjaTrader 8?
+- what code should live in Python?
+- what data should NT8 send to Python?
+- what decisions should Python send back to NT8?
+- how often should communication occur?
+- what is the best communication method?
+- how should failures be handled?
+- what should happen if Python disconnects?
+- should NT8 be allowed to trade without Python?
+- how should logging work?
+- how should state synchronization work?
+- how should session resets work?
+- how should recovery after restart work?
+
+Also discuss:
+- inference latency requirements
+- stability requirements
+- how to avoid race conditions
+- how to make the architecture debuggable
+- how to make it safe for live trading
+
+==================================================
+12. TRAINING / VALIDATION / RETRAINING PIPELINE
+==================================================
+
+Design the full research pipeline.
+
+Include:
+- raw data requirements
+- labeling design
+- per-instrument vs cross-instrument models
+- train/validation/test design
+- walk-forward process
+- rolling retraining schedule
+- feature drift monitoring
+- regime drift monitoring
+- model decay detection
+- performance-based shutdown rules
+- when to retrain
+- when NOT to retrain
+- what should adapt online
+- what should only adapt offline
+
+I want the safest practical process for maintaining model relevance over time without overfitting to the last few days.
+
+==================================================
+13. BUILD ORDER / DEVELOPMENT ROADMAP
+==================================================
+
+Give me a phased implementation plan specifically for NT8 + Python.
+
+For example:
+Phase 1: build the NT8 feature exporter and Python data pipeline
+Phase 2: build the regime classifier
+Phase 3: build one specialist model
+Phase 4: build the policy selector
+Phase 5: build the hard risk engine
+Phase 6: simulate and paper trade
+Phase 7: micro-contract live deployment
+Phase 8: prop-firm-safe refinement
+
+For each phase, define:
+- exact deliverables
+- success criteria
+- test criteria
+- what must be proven before moving to the next phase
+
+==================================================
+14. MINIMUM VIABLE SYSTEM VS LATER VERSIONS
+==================================================
+
+I want you to separate the design into:
+
+Minimum viable version
+Version 2
+Version 3
+For each version, explain:
+- what components it includes
+- what complexity is intentionally excluded
+- what the tradeoffs are
+- why that version is appropriate at that stage
+
+I want a realistic incremental path, not an impossible “build everything at once” plan.
+
+==================================================
+15. FAILURE MODES AND KILL SWITCHES
+==================================================
+
+List the major failure modes of this architecture.
+
+Examples:
+- overfitting
+- stale regime logic
+- unstable specialist model behavior
+- policy thrashing
+- event-day misclassification
+- slippage spikes
+- bad NT8/Python communication
+- data feed problems
+- inference lag
+- correlated losses across instruments
+- false confidence during unusual regimes
+
+For each one, define:
+- why it happens
+- how dangerous it is
+- how to detect it
+- what hard kill switch or safety response should exist
+
+==================================================
+16. FINAL RECOMMENDED ARCHITECTURE
+==================================================
+
+After evaluating everything above, give me your single best practical recommendation.
+
+This must include:
+- the exact modular architecture
+- the exact recommended models by layer
+- the exact first 2 specialist strategies to build
+- the exact first instrument(s) to trade
+- the exact contract sizing guidance
+- the exact risk engine priorities
+- the exact NT8/Python communication design
+- the exact development order
+- the exact safest path from research to live deployment
+
+==================================================
+17. CODE-READY DELIVERABLES
+==================================================
+
+At the end, provide:
+
+A. a concise blueprint of the full system
+B. a word-based component diagram
+C. a list of all required raw data inputs
+D. a list of engineered features by layer
+E. a list of regime labels
+F. a list of specialist strategy modules
+G. a policy decision table
+H. a risk-control table
+I. a recommended file/project structure
+J. pseudocode for the live decision loop
+K. pseudocode for the risk engine
+L. pseudocode for NT8-to-Python communication
+M. pseudocode for the daily session reset process
+N. a checklist for validating the system before live deployment
+
+==================================================
+18. PRACTICALITY FILTER
+==================================================
+
+Before finalizing your answer, explicitly challenge your own design.
+
+Tell me:
+- what parts are too complex
+- what parts are most likely to overfit
+- what parts are fragile in live trading
+- what parts are unrealistic for NT8
+- what parts should be simplified
+- what parts should be postponed until the simpler system proves itself
+
+Then revise your recommendation to make it more practical, more robust, and more likely to survive real trading.
+
+==================================================
+19. FINAL INSTRUCTION
+==================================================
+
+Do not give me vague theory.
+Do not give me a fantasy “AI will figure it out” answer.
+Do not design an end-to-end black box.
+Do not optimize for cleverness.
+
+I want the best practical modular adaptive futures day trading architecture for NinjaTrader 8 + Python external ML service.
+
+It must be:
+- realistic
+- robust
+- risk-controlled
+- buildable
+- testable
+- adaptable
+- suitable for a small trader with serious risk constraints
+
+Think like a quantitative architect building a real production trading system for a capital-constrained futures trader, not a researcher showing off.
+
+After the architecture sections, also provide:
+- a proposed Python tech stack
+- a proposed NT8 integration approach
+- class/module names
+- API endpoint designs or socket message formats
+- a sample JSON schema for NT8 -> Python requests
+- a sample JSON schema for Python -> NT8 responses
+- pseudocode for how NT8 should request permission before placing every trade
+
+Throughout the answer, assume that simplicity, capital preservation, and operational reliability matter more than maximizing returns. If any design choice is too complex, too fragile, or too risky for a trader with a small account or prop-firm drawdown limits, reject it and replace it with a safer alternative.
+
+Show less
+Apr 4
+
+Architected comprehensive modular trading system design systematically
+Architected comprehensive modular trading system design systematically
+ADAPTIVE FUTURES DAY TRADING SYSTEM
+Modular Architecture for NinjaTrader 8 + Python
+A Quantitative Production Design Document
+1. SYSTEM PHILOSOPHY
+Why Modular Beats Monolithic
+A single end-to-end ML model trained to "predict the market" fails in production for a simple reason: markets are non-stationary. The statistical relationships that generate alpha in a trending environment actively destroy alpha in a mean-reverting one. A model that tries to learn both simultaneously learns neither cleanly — it smooths over the edges that define each regime and produces mediocre behavior everywhere.
+
+The modular architecture solves this by decomposing the problem correctly. Each layer has a single, testable job:
+
+Regime detection matters because market microstructure changes character throughout the day and across sessions. A 9:45 AM opening drive has different statistical properties than 12:30 PM midday chop or a 3:30 PM closing squeeze. Treating all bars as IID observations is the original sin of most retail trading systems. When you explicitly model regime, you can build strategies that are right for the conditions — not strategies that are on average slightly right across all conditions and actually terrible in any specific one.
+
+Specialist strategies outperform a single generalist because their loss functions can be designed for a specific behavior. A trend pullback model should penalize missing continuation moves more than catching small reversals. A mean reversion model should be exactly the opposite. You cannot optimize for both simultaneously. Specialist models also fail in interpretable, diagnosable ways. When a trend model loses money during a range day, you know exactly why and exactly what to fix: the regime classifier failed to suppress it. The failure mode is isolated and actionable.
+
+A policy selector improves robustness by creating an explicit governance layer between intelligence and action. Without a policy selector, you have a collection of models that can all fire simultaneously, conflict with each other, overload your position, or activate in the wrong environment. The policy selector treats regime output and specialist signals as inputs to a controlled decision process rather than direct execution commands. This is how institutional desks actually work — research generates signals, risk management decides what to act on.
+
+A hard risk engine must sit above all models because models are probabilistic opinions and risk is arithmetic certainty. A model with 60% directional accuracy loses money if the losses on wrong trades are larger than gains on right trades. The risk engine does not know or care about model confidence. It knows your account balance, your daily loss, your position size, and your drawdown state. It enforces limits that no model output can override. This is not a preference — it is a structural requirement for surviving in futures.
+
+This architecture is more realistic for NT8 + Python than an end-to-end black box for operational reasons. NT8 is a mature execution platform with excellent order management, native indicator calculation, and low-latency market data access. Python is where the serious numerical work belongs — scikit-learn, pandas, numpy, LightGBM, feature engineering pipelines, logging, and research tooling. Trying to do ML inside NT8 using C# is painful, fragile, and unmaintainable. Trying to do execution and order management in Python for futures is equally painful and introduces unnecessary latency and reliability risk. Give each environment the job it was designed for.
+
+2. HIGH-LEVEL ARCHITECTURE
+System Overview
+MARKET DATA (NT8)
+     |
+     v
+[NT8 FEATURE EXPORTER]  ---JSON via TCP Socket--->  [PYTHON INTELLIGENCE SERVER]
+     |                                                        |
+     |                                              ┌─────────────────────┐
+     |                                              │  REGIME CLASSIFIER  │
+     |                                              └─────────┬───────────┘
+     |                                                        |
+     |                                              ┌─────────▼───────────┐
+     |                                              │  SPECIALIST MODELS  │
+     |                                              └─────────┬───────────┘
+     |                                                        |
+     |                                              ┌─────────▼───────────┐
+     |                                              │  POLICY SELECTOR    │
+     |                                              └─────────┬───────────┘
+     |                                                        |
+     |                                              ┌─────────▼───────────┐
+     |                                              │  HARD RISK ENGINE   │
+     |                                              └─────────┬───────────┘
+     |                                                        |
+     |<---JSON Response (permission/block/params)-------------┘
+     |
+[NT8 EXECUTION ENGINE]
+     |
+[ORDER MANAGEMENT / BROKER]
+What Runs Where
+Inside NinjaTrader 8 (C#):
+
+Market data subscription and bar construction
+Real-time indicator calculation (ATR, VWAP, EMA, volume)
+Feature vector assembly and serialization
+TCP socket client for Python communication
+Order execution and position management
+Hard position limits and local emergency stops
+Session management (open/close times, instrument calendar)
+Execution logging
+Inside Python (External Intelligence Server):
+
+Regime classifier (inference)
+All specialist model inference
+Policy selector logic
+Risk engine state tracking (daily P&L, drawdown, consecutive losses)
+Feature normalization and preprocessing
+Event calendar management
+All logging and state persistence
+Research, training, and backtesting pipelines
+Communication Architecture: TCP Socket with JSON Protocol
+Selected architecture: Local TCP socket with synchronous request/response JSON protocol
+
+Why not alternatives:
+
+File-based: Too slow for bar-by-bar decisions, race conditions on write/read, no error signaling
+REST/HTTP: Overhead of HTTP framing is unnecessary; also async complications
+Message bus (Kafka/RabbitMQ): Far too complex for a single-trader system; operational burden is unacceptable
+Database/cache (Redis): Good option for async patterns but adds a dependency and complexity layer not needed here
+Shared memory: Platform-specific, hard to debug, no clean Python/C# bridge
+Why local TCP socket wins:
+
+Millisecond latency on loopback
+Simple, reliable, debuggable with Wireshark or basic logging
+NT8 has solid TcpClient support in C#
+Python's socket library is stable and well-understood
+Synchronous request/response matches the bar-by-bar decision cadence
+Easy to add a timeout and fallback behavior if Python is unavailable
+Live Trading Loop
+Every bar close (or configurable interval):
+1. NT8 calculates feature vector from current bar + context
+2. NT8 checks: is Python connected? If not → apply local safety mode
+3. NT8 sends JSON request to Python intelligence server
+4. Python processes: Regime → Specialists → Policy → Risk
+5. Python returns JSON response within latency budget (target < 50ms)
+6. NT8 reads response: execute / block / reduce / shutdown
+7. NT8 places or manages orders per response parameters
+8. NT8 logs outcome
+9. Python logs outcome with regime/policy context
+Research and Retraining Loop (Offline)
+Daily after session close:
+1. Export day's bar data, features, trades, outcomes
+2. Append to labeled dataset
+3. Run feature drift checks
+4. Run model performance checks
+5. If retraining criteria met: retrain on rolling window
+6. Validate new model on holdout
+7. If validated: deploy new model weights to production server
+8. Log all pipeline outputs
+3. REGIME CLASSIFIER DESIGN
+Regime Labels
+Define these explicit regimes with clear operational meaning:
+
+ID	Label	Description
+0	TREND_UP	Strong directional upward day, higher highs/lows
+1	TREND_DOWN	Strong directional downward day, lower highs/lows
+2	RANGE_BOUND	Price oscillating within defined bands, low direction
+3	BREAKOUT_CONTINUATION	Price broke through structure and is following through
+4	BREAKOUT_FAILURE	Price broke through structure but reversed — trap move
+5	MEAN_REVERSION	Price extended from VWAP/anchored mean, reverting
+6	VOLATILITY_EXPANSION	ATR expanding, range expanding, unusual energy
+7	VOLATILITY_COMPRESSION	ATR compressing, inside bars, pre-breakout coiling
+8	OPENING_DRIVE	First 30-60 minutes showing strong directional momentum
+9	MIDDAY_CHOP	11:30–1:30 ET low-volume, oscillating, high noise
+10	NEWS_DISTORTED	Major event causing abnormal structure
+11	RISK_OFF	Correlated selling across assets, defensive behavior
+12	NO_TRADE	Conditions too uncertain or dangerous to operate
+Inputs and Features
+Price Structure Features (5-minute primary, 15-minute context):
+
+Opening range high/low (first 30 minutes)
+Distance from opening range midpoint
+Prior day high, low, close, range
+Overnight gap size and direction (gap / prior ATR)
+Distance from prior day high/low as % of ATR
+Current bar's position within prior day range
+Distance from session VWAP (in ATR units)
+Slope of 20-bar EMA (linear regression of EMA over 10 bars)
+Efficiency ratio: net displacement / sum of absolute bar moves over N bars
+Price above/below 50-bar EMA
+Volatility Features:
+
+Current 14-bar ATR (5-minute)
+14-bar ATR as ratio to 20-day average ATR (relative ATR)
+Realized volatility: std of log returns over last 20 bars
+ATR slope: current ATR vs 10-bar-ago ATR
+High-low range of current bar vs prior 10-bar average range
+Opening range size vs prior 5-day average opening range
+Volume Features:
+
+Current volume vs 10-bar average volume (relative volume)
+Cumulative volume through time of day vs historical average
+Volume delta direction (buy-side vs sell-side if available via DOM data)
+VWAP band width
+Tick count per bar if available
+Temporal / Session Features:
+
+Time since RTH open (in minutes)
+Time until RTH close (in minutes)
+Session phase: Opening (0–90 min), Midday (90–330 min), Close (330–390 min) — encoded as 0/1/2
+Day of week (Monday has different behavior than Friday)
+Context Features:
+
+Event flag: major event within 90 minutes (binary)
+Event flag: event occurred within last 120 minutes (binary)
+Prior session outcome: trend day, range day, reversal day (categorical)
+Overnight range / 5-day average overnight range ratio
+Rotation / Chop Metrics:
+
+Mean bar-to-bar direction change rate over last 20 bars
+Fraction of bars that closed in opposite direction of previous bar
+Number of VWAP crossings in last 30 bars
+Max run length (consecutive same-direction closes)
+Update Frequency
+The regime classifier should update every completed 5-minute bar during RTH. It should not update on tick or on sub-minute data — this introduces noise. The current regime at any moment is the regime classified at the most recent 5-minute bar close.
+
+On the open (first 30 minutes), the classifier runs but policy selector applies a forced "OPENING caution" override that limits which specialists can fire until opening range is established.
+
+Output Design
+Output a probability distribution across all 13 regimes, not a single hard label.
+
+json
+{
+  "regime_probs": [0.05, 0.02, 0.08, 0.45, 0.12, 0.08, 0.06, 0.04, 0.03, 0.05, 0.01, 0.01, 0.00],
+  "primary_regime": 3,
+  "primary_label": "BREAKOUT_CONTINUATION",
+  "primary_confidence": 0.45,
+  "secondary_regime": 4,
+  "secondary_label": "BREAKOUT_FAILURE",
+  "secondary_confidence": 0.12,
+  "classifier_confidence": 0.45,
+  "low_confidence_flag": true
+}
+Confidence threshold: If primary_confidence < 0.40, set low_confidence_flag = true. Policy selector will treat this as a signal to reduce or suspend activity.
+
+Avoiding Unstable Regime Flipping
+Apply a regime persistence filter:
+
+New regime only becomes "active" if it holds for 2+ consecutive bar classifications, OR if confidence exceeds 0.65
+On transition, emit a "TRANSITION" state for one bar where size is halved
+Do NOT allow regime to toggle back within 3 bars (minimum persistence = 3 bars)
+Use an exponential moving average of regime probabilities with α = 0.3 to smooth the raw classifier output before policy decisions.
+
+Best Modeling Approach
+Recommendation: Gradient Boosting Classifier (LightGBM)
+
+Why not alternatives:
+
+Rule-based only: Too brittle, misses subtle regime signals, hard to calibrate across instruments
+HMM: Theoretically elegant but assumes Markov property and Gaussian emissions — both questionable for real futures data
+Neural nets: Require far more data, prone to overfit on regime labels, not interpretable
+Random forest: Good but slower to train than LightGBM, slightly less accurate on tabular data
+LightGBM wins because:
+
+Handles tabular features natively, no normalization required
+Trains in seconds, can be retrained daily
+Outputs calibrated probabilities with predict_proba
+Feature importance is directly interpretable
+Regularization (num_leaves, min_data_in_leaf, lambda) prevents overfit
+Proven on financial time-series classification tasks
+Label the training data using forward-looking regime outcome (what type of day did this bar belong to, judged at end of session), with careful attention to point-in-time honesty. No future data should leak into features.
+
+4. SPECIALIST STRATEGY MODEL DESIGN
+Recommended Specialist Set (Start With These)
+SPEC-1: Trend Pullback Continuation Model
+Purpose: Capture continuation entries during confirmed trend days when price pulls back to a dynamic support level.
+
+Allowed regimes: TREND_UP, TREND_DOWN, BREAKOUT_CONTINUATION Forbidden regimes: RANGE_BOUND, MIDDAY_CHOP, NEWS_DISTORTED, RISK_OFF, NO_TRADE, BREAKOUT_FAILURE, MEAN_REVERSION
+
+Features:
+
+Distance from 20-EMA (pullback depth in ATR)
+Distance from VWAP
+Recent bar efficiency ratio
+Volume on pullback bars (should be declining)
+Prior swing high/low distance
+Slope of EMA over last 8 bars
+Type: Rule-based with ML confidence scoring. Simple rules define a valid setup; LightGBM confidence score gates entry.
+
+Entry logic: Price pulls back to within 0.5–1.5 ATR of 20-EMA, efficiency ratio remains positive (>0.3), volume declining on pullback, then a single confirming bar closes in trend direction.
+
+Invalidation: Price closes below 20-EMA (long) or above (short); volume surges on pullback (suggests reversal not continuation); regime flips to RANGE or CHOP.
+
+Stop placement: Below the most recent pullback low (long) or above the most recent high (short). Stop width = 0.8–1.2 ATR. Never wider.
+
+Target: 1.5× risk to first target, partial exit 50% of position. Trail remainder by 1 ATR from entry.
+
+Aggressiveness: Moderate. Build this first. Most robust across instruments.
+
+SPEC-2: Opening Range Breakout Confirmation Model
+Purpose: Trade confirmed breakouts above/below the first 30-minute opening range when follow-through is evident.
+
+Allowed regimes: OPENING_DRIVE, BREAKOUT_CONTINUATION, TREND_UP (for long breaks), TREND_DOWN (for short breaks) Forbidden regimes: RANGE_BOUND, MIDDAY_CHOP, VOLATILITY_COMPRESSION, NEWS_DISTORTED (too fast and erratic), NO_TRADE
+
+Features:
+
+Opening range size vs 5-day average (normalized)
+Breakout bar's volume vs prior 5-bar average
+Breakout bar close position (high-close = strong)
+Distance from OR high/low at breakout
+Gap direction alignment with breakout direction
+Relative ATR at open
+Type: Primarily rule-based with a confirmation gate. The rule defines the breakout; a simple logistic regression or rule-based confidence filter gates whether the breakout has quality.
+
+Entry logic: Price breaks above OR high AND closes above it on a 5-minute bar, volume is above 1.5× prior 5-bar average, gap direction aligns (or no gap). Wait for first close above/below, then enter on next bar open.
+
+Invalidation: Price immediately reverses back inside OR within 2 bars — abort. Volume absent on break.
+
+Stop placement: At OR midpoint. Maximum stop = 1 ATR.
+
+Target: 2× risk. This is a momentum entry with expected follow-through. Do not use partial exits — this model either works or doesn't.
+
+Aggressiveness: Moderate-high. Build second. Dangerous in news-distorted opens.
+
+SPEC-3: Failed Breakout Reversal Model
+Purpose: Fade false breakouts — trade the trap. When price breaks a key level, runs stops, then reverses sharply back inside structure.
+
+Allowed regimes: BREAKOUT_FAILURE, RANGE_BOUND (with key level violations), MEAN_REVERSION Forbidden regimes: TREND_UP, TREND_DOWN, BREAKOUT_CONTINUATION, OPENING_DRIVE, VOLATILITY_EXPANSION, NEWS_DISTORTED, NO_TRADE
+
+Features:
+
+Distance of initial breakout thrust (ATR)
+Time duration of breakout before reversal
+Volume spike at breakout vs subsequent bar volume
+Distance from VWAP at reversal point
+Speed of retracement vs speed of breakout
+Wick-to-body ratio of breakout bar
+Type: Rule-based with strict criteria. Do not use ML here initially — the setup is too specific and data will be sparse.
+
+Entry logic: Price breaks prior high/low by 0.3–0.8 ATR, then closes back inside structure on same or next bar. Enter in reversal direction when price re-enters structure. Stop above the false breakout extreme.
+
+Invalidation: Breakout exceeds 1.5 ATR from level (genuine break, not a trap). Volume remains elevated on reversal bar (indicates continuation, not exhaustion).
+
+Stop placement: Just beyond the failed breakout extreme. Typically tight: 0.4–0.7 ATR.
+
+Target: 1.5× risk. These moves resolve quickly or not at all.
+
+Aggressiveness: Moderate. Build third. Most dangerous if misclassified — a real trend breakout looks identical to a false one for 1–2 bars.
+
+SPEC-4: VWAP Mean Reversion Model
+Purpose: Trade price returning to VWAP from extended deviation during range or chop days.
+
+Allowed regimes: RANGE_BOUND, MEAN_REVERSION, MIDDAY_CHOP, VOLATILITY_COMPRESSION Forbidden regimes: TREND_UP, TREND_DOWN, BREAKOUT_CONTINUATION, OPENING_DRIVE, VOLATILITY_EXPANSION, NEWS_DISTORTED, NO_TRADE
+
+Features:
+
+Distance from VWAP in ATR units (z-score of deviation)
+VWAP slope (should be flat or mildly sloped)
+Number of VWAP crosses in prior 30 bars
+Relative volume (should be low — high volume in range day signals something brewing)
+Time of day (midday works best, avoid using in final 30 minutes)
+ATR vs 5-day ATR ratio (should be below 1.0)
+Type: Rule-based. VWAP mean reversion is a well-understood mechanical setup. Entry when |deviation| > 1.5 ATR, direction back toward VWAP.
+
+Entry logic: Price deviates more than 1.5 ATR from VWAP, shows a reversal bar (wick in deviation direction, close toward VWAP), VWAP slope is near-flat, enter in direction of VWAP.
+
+Invalidation: Volume spikes (regime is changing). Price reaches 2× ATR deviation without reversal. Regime flips to trend.
+
+Stop placement: At 2× ATR from VWAP (or recent swing). Target: VWAP itself.
+
+Aggressiveness: Conservative. Build fourth. Strong prop-firm profile: small, tight, high frequency, modest gains.
+
+SPEC-5: Stand-Down / No-Trade Mode
+Purpose: Explicitly do nothing. This is a first-class strategy module, not an absence of strategy.
+
+Activated when: NEWS_DISTORTED, NO_TRADE, RISK_OFF, any regime with confidence < 0.35, post–stop-out within the first 60 minutes, after 3 consecutive losses, in final 15 minutes of session.
+
+This module returns no signals. Its presence in the system forces the policy selector to have an explicit "do nothing" state rather than defaulting to the least-bad active specialist.
+
+Build Order and Danger Assessment
+Model	Build Order	Danger Level	Prop-Firm Fit
+SPEC-1: Trend Pullback	First	Low	High
+SPEC-2: ORB Confirmation	Second	Medium	Medium
+SPEC-4: VWAP Mean Reversion	Third	Low	High
+SPEC-3: Failed Breakout Reversal	Fourth	High	Medium
+SPEC-5: Stand-Down	First (always)	None	Critical
+Postpone for later:
+
+Liquidity sweep model (requires DOM data, complex)
+Momentum continuation (too similar to SPEC-1, adds correlation risk)
+Any overnight / multi-session models (not day trading)
+5. POLICY SELECTOR DESIGN
+Role and Responsibilities
+The policy selector is the arbiter. It takes regime probabilities, specialist model outputs, event flags, time-of-day state, and risk engine state, and produces exactly one of these outputs per bar:
+
+ACTIVE(specialist_id, direction, size_multiplier): One specific specialist is permitted, with specified direction and sizing
+REDUCED(specialist_id, direction, size_multiplier < 1.0): Same, but sized down
+STANDDOWN: No trading permitted this bar
+DEFENSIVE: Only micro contracts, only SPEC-4 (VWAP reversion) or no trade
+Decision Logic
+Step 1: Check hard blocks first
+
+If risk engine returns SHUTDOWN → output STANDDOWN, stop
+If event flag IMMINENT (< 30 min to major event) → STANDDOWN
+If time is in final 15 minutes → STANDDOWN
+If time is in first 15 minutes → STANDDOWN (pre-open noise)
+Step 2: Evaluate regime confidence
+
+If classifier_confidence < 0.35 → STANDDOWN
+If classifier_confidence < 0.50 → DEFENSIVE mode (only SPEC-4 or none)
+Step 3: Map primary regime to allowed specialists
+
+Primary Regime	Allowed Specialists	Blocked Specialists
+TREND_UP	SPEC-1 (long only), SPEC-2 (long only)	SPEC-3, SPEC-4
+TREND_DOWN	SPEC-1 (short only), SPEC-2 (short only)	SPEC-3, SPEC-4
+RANGE_BOUND	SPEC-4	SPEC-1, SPEC-2
+BREAKOUT_CONTINUATION	SPEC-1, SPEC-2	SPEC-4
+BREAKOUT_FAILURE	SPEC-3	SPEC-1, SPEC-2, SPEC-4
+MEAN_REVERSION	SPEC-3, SPEC-4	SPEC-1, SPEC-2
+VOLATILITY_EXPANSION	SPEC-5 (standdown)	ALL
+VOLATILITY_COMPRESSION	SPEC-4 (reduced)	SPEC-1, SPEC-2, SPEC-3
+OPENING_DRIVE	SPEC-2 only	SPEC-3, SPEC-4
+MIDDAY_CHOP	SPEC-4 or none	SPEC-1, SPEC-2, SPEC-3
+NEWS_DISTORTED	SPEC-5 (standdown)	ALL
+RISK_OFF	SPEC-5 (standdown)	ALL
+NO_TRADE	SPEC-5 (standdown)	ALL
+Step 4: Resolve specialist signal quality
+
+Each active specialist outputs a setup quality score (0–1)
+If no specialist produces quality score > 0.55 → STANDDOWN
+If highest quality score is 0.55–0.70 → allow with size multiplier 0.5
+If highest quality score is 0.70–0.85 → allow with size multiplier 1.0
+If highest quality score > 0.85 → allow with size multiplier 1.0 (never exceed 1.0 based on confidence alone)
+Step 5: Conflict resolution
+
+If two specialists both qualify → take the one with higher quality score only
+Never allow two specialists simultaneously open
+Never blend signals
+Step 6: Anti-thrashing filter
+
+Track last 3 policy outputs
+If policy has changed 3+ times in 6 bars → force STANDDOWN for 3 bars
+This prevents policy oscillation caused by regime probability instability
+Step 7: Repeated failure penalty
+
+If the active specialist has had 2 losses in the current session under the current regime → reduce size multiplier by 0.5
+If 3 losses in current session under current regime → force SPEC-5 (standdown) for this regime for remainder of session
+Policy Decision Table (Compact Form)
+REGIME         | CONFIDENCE | EVENT  | TIME    | RISK    | POLICY OUTPUT
+---------------|------------|--------|---------|---------|---------------------------
+TREND_UP       | > 0.60     | None   | Normal  | OK      | SPEC-1 LONG, size=1.0
+TREND_UP       | 0.40-0.60  | None   | Normal  | OK      | SPEC-1 LONG, size=0.5
+TREND_UP       | < 0.40     | Any    | Any     | Any     | STANDDOWN
+TREND_UP       | Any        | IMMIN  | Any     | Any     | STANDDOWN
+TREND_UP       | Any        | Any    | Open15  | Any     | STANDDOWN
+RANGE_BOUND    | > 0.55     | None   | Midday  | OK      | SPEC-4, size=1.0
+RANGE_BOUND    | > 0.55     | None   | Open/Cl | OK      | SPEC-4, size=0.5
+BREAKOUT_FAIL  | > 0.60     | None   | Normal  | OK      | SPEC-3, size=0.5
+OPENING_DRIVE  | > 0.65     | None   | Open90  | OK      | SPEC-2, size=1.0
+NEWS_DISTORTED | Any        | Any    | Any     | Any     | STANDDOWN
+Any            | Any        | Any    | Any     | PAUSE   | STANDDOWN
+Any            | Any        | Any    | Any     | SHUTDOWN| STANDDOWN
+6. HARD RISK ENGINE DESIGN
+Architecture Principle
+The risk engine is a stateful session guardian. It maintains its own state independently of all models. No model output, no confidence score, no regime classification can override a hard limit. The risk engine speaks last and can always say no.
+
+Account-Specific Parameters
+Sub-$2,000 Personal Account
+Parameter	Value	Rationale
+Max risk per trade	$40 (2% of $2,000)	One bad trade cannot materially harm account
+Max daily loss	$80 (4% of $2,000)	Protects from cascade failure
+Max trades per day	4	Prevents overtrading under losses
+Max consecutive losses	3	Pattern of bad trading → pause
+Max open risk at once	$40 (one position only)	No pyramiding
+Defensive mode trigger	-$50 daily loss	Reduces to half-size for remainder
+Shutdown trigger	-$80 daily loss	End session
+Gain protection trigger	+$60 daily gain	Risk-off: reduce to minimum viable size
+Prop Firm Account (~$2,000 Drawdown Limit)
+Parameter	Value	Rationale
+Max risk per trade	$50 (2.5% of $2,000 limit)	Firm's daily loss limit is real
+Max daily loss	$100 (5% of $2,000 limit)	Far inside firm's limit
+Max trades per day	5	Slightly more room
+Max consecutive losses	3	Same
+Max open risk at once	$50	Same — one position
+Defensive mode trigger	-$60 daily loss	Earlier than personal account
+Shutdown trigger	-$100 daily loss	Hard stop
+Gain protection trigger	+$80 daily gain	Protect gains aggressively
+Weekly loss limit	-$200	Prevent runaway weekly drawdown
+Risk States
+NORMAL        → All specialists active per policy, full size allowed
+REDUCED       → Policy can activate specialists but size multiplier capped at 0.5
+DEFENSIVE     → Only SPEC-4 or standdown; micros only; size multiplier = 0.25
+PAUSED        → No new trades for N bars (timed pause, not day-end)
+SHUTDOWN      → No new trades for rest of session; exit existing positions
+Risk Reduction Triggers
+After drawdown:
+
+At 50% of daily loss limit → REDUCED mode
+At 75% of daily loss limit → DEFENSIVE mode
+At 100% of daily loss limit → SHUTDOWN
+After consecutive losses:
+
+2 consecutive losses → size multiplier × 0.75
+3 consecutive losses → PAUSED (30 minutes), then REDUCED for rest of session
+If pause completes and regime has changed favorably → resume REDUCED
+If pause completes and regime unchanged → SHUTDOWN
+After volatility events:
+
+If ATR exceeds 2× 5-day average ATR → force REDUCED or DEFENSIVE
+If any single bar's range exceeds 3× typical bar range → PAUSED (10 minutes)
+Immediately after major event release → PAUSED (15 minutes minimum)
+Gain protection:
+
+Once daily gain exceeds the gain protection trigger: new risk limit = half the daily gain at that moment
+Example: Gained $80, protection triggers. New stop-loss from this point = $40. If account gives back $40 from peak, SHUTDOWN.
+Instrument-specific blocks:
+
+CL/MCL: Only permitted in NORMAL or REDUCED state. Blocked entirely in DEFENSIVE.
+GC/MGC: Permitted in all states (lower volatility profile relative to crude)
+NQ/MNQ: Permitted in REDUCED; blocked in DEFENSIVE on high-volatility days
+ES/MES: Permitted in all risk states
+Preventing Model Confidence Override
+This is enforced structurally, not by instruction. The risk engine receives only:
+
+Current daily P&L
+Current position
+Current consecutive loss count
+Current time
+Current ATR ratio
+Current event flag
+It does NOT receive model confidence scores. It cannot be influenced by them. It operates purely on observable, auditable facts.
+
+Preventing Revenge Trading
+The system cannot feel revenge, but it can exhibit systematic re-entry after losses in the same direction. Prevention:
+
+After 3 consecutive losses → PAUSED (time-locked, not overridable)
+After PAUSED ends → max trades for session is reduced by 2
+After SHUTDOWN → the session is over. No re-entry, no exceptions.
+Detecting Model Underperformance
+Track rolling performance metrics in Python:
+
+Last 10 trades: win rate and average P&L
+Current week: win rate and average P&L
+Expected win rate from backtesting by regime
+If current 10-trade win rate < 0.35 AND average P&L is negative → force DEFENSIVE for rest of session.
+If current week win rate < 0.30 → flag for human review; force REDUCED for following session.
+
+7. FEATURE ENGINEERING PLAN
+Regime Classification Features
+Feature	Why It Matters	Calculation	Lookback	Transform
+ATR ratio	Volatility context	ATR(14) / 20d avg ATR	14 bars + 20d	Raw ratio
+ATR slope	Expanding vs compressing	(ATR now - ATR 10 bars ago) / ATR	10 bars	Signed ratio
+Efficiency ratio	Trend strength	Net move / sum of bar moves	20 bars	0–1, higher=stronger trend
+VWAP distance	Mean deviation	(Price - VWAP) / ATR	Session	Z-score style
+VWAP slope	Session direction	Linear slope of VWAP over 10 bars	10 bars	Normalize
+OR size ratio	Opening character	OR range / 5d avg OR	5 days	Raw ratio
+Relative volume	Participation	Vol / 10-bar avg vol	10 bars	Raw ratio
+Chop rate	Range/trend discrimination	Bar direction changes / N bars	20 bars	0–1, higher=choppier
+Gap ratio	Context	Gap / prior ATR	Daily	Signed ratio
+Session phase	Time context	Minutes since RTH open	Live	0/1/2 categorical
+Event flag	News context	Binary from calendar	Live	0/1
+EMA slope	Trend direction	Regression slope of 20-EMA	10 bars	Normalized
+Prior day structure	Context	Trend/range/reversal label	1 day	Categorical
+VWAP crossing rate	Chop	VWAP crosses / 30 bars	30 bars	Integer
+Max run length	Persistence	Consecutive same-direction closes	20 bars	Integer
+Features likely to overfit: Prior day exact price levels, intraday volume patterns on short lookbacks, any feature requiring exact tick-level data.
+
+Fragile features: Real-time volume (data quality varies), DOM-derived features (requires CME data subscription), tick count per bar.
+
+Most robust across instruments: ATR ratio, efficiency ratio, session phase, event flag, gap ratio, chop rate.
+
+Avoid early in development: Any feature requiring Level 2/DOM data, order flow imbalance, proprietary data sources.
+
+Specialist Model Features
+SPEC-1 (Trend Pullback):
+
+Pullback depth: (entry bar close - 20-EMA) / ATR
+Pullback volume: last 3-bar avg volume / prior 10-bar avg volume (should be < 0.85)
+EMA slope at pullback (positive = still trending)
+Distance to prior swing low/high in ATR
+Bar close quality: (close - low) / (high - low)
+SPEC-2 (ORB):
+
+Breakout volume ratio: breakout bar volume / 5-bar avg
+Breakout bar close position: (close - OR_level) / ATR
+Gap alignment: gap direction == breakout direction (binary)
+OR size ratio (larger ORs = more energy but also more risk)
+First bar above/below OR: binary, entry is this bar
+SPEC-3 (Failed Breakout):
+
+Thrust size: (false break extreme - level) / ATR
+Reversal speed: bars from breakout to re-entry inside structure
+Volume at breakout vs volume at reversal (breakout should be larger)
+Wick ratio of breakout bar: upper/lower wick vs body
+SPEC-4 (VWAP Reversion):
+
+VWAP deviation in ATR (2+ standard deviations = setup zone)
+VWAP slope (flat = range, slope = trend, caution)
+Time of day (midday = best)
+Relative volume (low = better for reversion)
+Reversal confirmation bar: wick toward VWAP, close toward VWAP
+Policy Selector Inputs
+Regime probability vector (13 values)
+Regime confidence (scalar)
+Each specialist's quality score (0–1 per specialist)
+Event flag (binary)
+Session phase (categorical)
+Risk state (categorical: NORMAL/REDUCED/DEFENSIVE/PAUSED/SHUTDOWN)
+Consecutive losses count (integer)
+Daily P&L as % of account (float)
+Recent specialist performance (rolling 10-trade win rate per specialist)
+Risk Engine Inputs
+Current position size and direction
+Current open risk in dollars
+Realized P&L this session
+Unrealized P&L on open position
+Entry time of current position (for time-in-trade management)
+Consecutive losses
+Current ATR ratio (volatility context)
+Event flag
+Current time (session phase)
+Daily high water mark P&L
+8. NEWS / EVENT AWARENESS
+Event Categories and Practical Implementation
+Do not build a natural language parser for news. Build a structured event calendar that is loaded at session start from a CSV or JSON file updated daily.
+
+Event tier classification:
+
+Tier	Events	Behavior
+TIER 1 — Major	CPI, FOMC, NFP, PPI	No trade 30 min before, 20 min after
+TIER 2 — Significant	Jobless claims, GDP, ISM, retail sales	No trade 15 min before, 10 min after
+TIER 3 — Moderate	Crude inventory (CL/MCL only), Fed speakers, housing data	Caution 10 min before, 5 min after
+TIER 4 — Context	Auction results, secondary data	No restriction; flag only
+Representation
+Store events as structured flags in a daily schedule loaded at session open:
+
+json
+{
+  "date": "2026-04-04",
+  "events": [
+    {
+      "time_et": "08:30",
+      "label": "CPI",
+      "tier": 1,
+      "instruments_affected": ["NQ", "ES", "GC", "CL"],
+      "pre_blackout_minutes": 30,
+      "post_blackout_minutes": 20
+    },
+    {
+      "time_et": "10:30",
+      "label": "CRUDE_INVENTORY",
+      "tier": 3,
+      "instruments_affected": ["CL"],
+      "pre_blackout_minutes": 10,
+      "post_blackout_minutes": 5
+    }
+  ]
+}
+The Python server checks this calendar on every bar and sets:
+
+event_imminent: bool — within pre-blackout window
+event_recent: bool — within post-blackout window
+event_tier: int — worst current event tier active
+event_affected_instruments: list — which instruments are impacted
+System Behavior
+Before major events (Tier 1 and 2):
+
+30+ minutes before: SPEC-2 and SPEC-1 are suppressed (trend-following into news = stop-run risk)
+SPEC-4 with extremely tight stops may still operate if in a clear range
+Position size caps at 50% of normal
+All open positions must be flat by 15 minutes before Tier 1 events
+Immediately after major events (0–20 minutes):
+
+Forced STANDDOWN regardless of regime or specialist quality
+Do not try to trade the initial spike — slippage during the first post-event minutes is brutal
+Risk engine sets post-event flag that persists for 20 minutes minimum
+Rest of day after abnormal event-driven movement:
+
+If the post-event move is > 2× expected range for that event → flag NEWS_DISTORTED regime
+NEWS_DISTORTED forces SPEC-5 (standdown) for a minimum of 60 minutes
+After 60 minutes, allow REDUCED risk re-engagement only if regime classifier shows stabilizing signal (VWAP convergence, declining ATR slope)
+For overnight gaps > 1.5× typical:
+
+Load gap context at session open
+Tag as "gap day" for full session
+SPEC-2 (ORB) gets special caution: OR size may be inflated; reduce size multiplier to 0.5
+Practical Data Source
+Use the Economic Calendar from Investing.com or ForexFactory scraped daily (legal and free). Parse into the JSON format above. Update the local file before each session. This is a 5-minute manual or scripted task — not a live data feed requirement. Do not try to ingest live news sentiment. That requires ML pipelines (NLP) that are far beyond what this system needs at this stage.
+
+9. MODELING APPROACH BY LAYER
+A. Regime Classifier: LightGBM Multiclass Classifier
+Recommendation: LightGBM with probability output
+
+LightGBM's advantages for this task:
+
+Trains on 6–12 months of 5-minute bar data in seconds
+Handles 15–25 features without normalization
+Produces calibrated predict_proba output across all 13 classes
+Built-in regularization protects against overfit
+Retraining is fast enough to do daily
+Why not HMM: HMMs assume Markov structure (current state depends only on prior state) and Gaussian emissions. Real market regimes have long-memory properties and non-Gaussian distributions. HMMs are elegant but empirically underperform gradient boosting on this task.
+
+Why not neural nets: Sample efficiency is far worse; interpretability suffers; retraining is slower; no clear benefit over LightGBM on tabular features.
+
+Label construction: Assign regime labels in hindsight to each 5-minute bar based on end-of-session analysis. Label a bar as "TREND_UP" if the session from that bar forward showed continuous higher highs/lows and the session closed significantly above open. Labels require judgment — some manual review of training data is essential.
+
+B. Specialist Models: Rule-Based with Optional LightGBM Quality Scorer
+Recommendation: Rule-based setups gated by LightGBM binary classifier (quality score)
+
+Do not attempt to build full ML entry models initially. Instead:
+
+Define the setup rules clearly (see Section 4)
+When a rule-based setup is detected, compute a feature vector for that specific setup instance
+Run the feature vector through a small LightGBM binary classifier trained to predict "did this specific setup produce a profitable outcome within the next N bars"
+Output is a quality score (0–1)
+Policy selector uses the quality score to gate execution
+This hybrid is more trainable than pure ML (you need the rules to reduce the universe of potential setups) and more adaptive than pure rules (the quality scorer adjusts to current feature distributions).
+
+Training signal: Label each rule-based setup instance as 1 (profitable) or 0 (not profitable) based on forward outcome within 6 bars or 1× ATR excursion.
+
+C. Policy Selector: Deterministic Rule Engine
+Recommendation: Hard rule-based state machine
+
+Do not use ML for the policy selector. The policy selector needs to be:
+
+Auditable (you must be able to explain every decision)
+Stable (no model drift)
+Predictable (no unexpected outputs)
+Fast (no inference latency)
+A rule-based state machine with the decision table from Section 5 is the correct tool. The ML is inside the specialist quality scorers and regime classifier — the policy selector is the controlled bridge between them.
+
+If you later want to optimize policy parameters (quality thresholds, size multipliers), use a structured parameter search over backtested outcomes — not online learning.
+
+D. Risk Engine: Hardcoded Arithmetic Rules
+Recommendation: Pure deterministic code with no ML component whatsoever
+
+The risk engine must be:
+
+Deterministic
+Stateful
+Impossible to override by model output
+Auditable and testable with unit tests
+Use a Python class with explicit state transitions and hard arithmetic limits. Test it exhaustively. The risk engine is the most critical component in the entire system — it is not a machine learning problem.
+
+10. SIGNAL AND OUTPUT DESIGN
+Regime Classifier Output Schema
+json
+{
+  "timestamp": "2026-04-04T10:15:00",
+  "instrument": "MNQ",
+  "regime_probabilities": {
+    "TREND_UP": 0.08,
+    "TREND_DOWN": 0.04,
+    "RANGE_BOUND": 0.12,
+    "BREAKOUT_CONTINUATION": 0.41,
+    "BREAKOUT_FAILURE": 0.09,
+    "MEAN_REVERSION": 0.06,
+    "VOLATILITY_EXPANSION": 0.05,
+    "VOLATILITY_COMPRESSION": 0.03,
+    "OPENING_DRIVE": 0.04,
+    "MIDDAY_CHOP": 0.03,
+    "NEWS_DISTORTED": 0.02,
+    "RISK_OFF": 0.02,
+    "NO_TRADE": 0.01
+  },
+  "primary_regime": "BREAKOUT_CONTINUATION",
+  "primary_confidence": 0.41,
+  "secondary_regime": "RANGE_BOUND",
+  "secondary_confidence": 0.12,
+  "low_confidence_flag": true,
+  "regime_stable": false,
+  "bars_in_current_regime": 2
+}
+Specialist Model Output Schema
+Each specialist outputs per bar when called:
+
+json
+{
+  "specialist_id": "SPEC1_TREND_PULLBACK",
+  "timestamp": "2026-04-04T10:15:00",
+  "setup_detected": true,
+  "quality_score": 0.72,
+  "direction": "LONG",
+  "entry_price_reference": 17845.25,
+  "stop_reference": 17832.00,
+  "stop_distance_points": 13.25,
+  "stop_distance_atr_multiples": 0.85,
+  "target_1_reference": 17865.00,
+  "target_1_rr_ratio": 1.50,
+  "invalidation_conditions": ["close_below_ema", "regime_change"],
+  "no_trade_reason": null
+}
+Policy Selector Output Schema
+json
+{
+  "timestamp": "2026-04-04T10:15:00",
+  "policy_state": "ACTIVE",
+  "active_specialist": "SPEC1_TREND_PULLBACK",
+  "allowed_direction": "LONG",
+  "size_multiplier": 0.75,
+  "reason": "TREND_CONTINUATION_REDUCED_CONFIDENCE",
+  "blocked_specialists": ["SPEC3_FAILED_BREAKOUT", "SPEC4_VWAP_REVERSION"],
+  "no_trade_flag": false,
+  "standdown_reason": null
+}
+Risk Engine Output Schema
+json
+{
+  "timestamp": "2026-04-04T10:15:00",
+  "risk_state": "REDUCED",
+  "trade_permitted": true,
+  "max_risk_this_trade_dollars": 20.00,
+  "size_cap_multiplier": 0.50,
+  "instrument_blocked": false,
+  "daily_pnl": -32.50,
+  "daily_pnl_limit": -80.00,
+  "consecutive_losses": 2,
+  "max_consecutive_losses": 3,
+  "session_trades_taken": 2,
+  "max_session_trades": 4,
+  "gain_protection_active": false,
+  "shutdown_triggered": false,
+  "shutdown_reason": null
+}
+Final Combined Response to NT8
+json
+{
+  "timestamp": "2026-04-04T10:15:00",
+  "request_id": "req_20260404_101500_MNQ",
+  "permission": "EXECUTE_REDUCED",
+  "active_specialist": "SPEC1_TREND_PULLBACK",
+  "direction": "LONG",
+  "entry_type": "MARKET_ON_NEXT_BAR_OPEN",
+  "stop_distance_points": 13.25,
+  "target_1_distance_points": 19.88,
+  "final_size_multiplier": 0.375,
+  "base_contracts": 1,
+  "final_contracts": 1,
+  "regime": "BREAKOUT_CONTINUATION",
+  "regime_confidence": 0.41,
+  "risk_state": "REDUCED",
+  "rejection_reasons": [],
+  "metadata": {
+    "quality_score": 0.72,
+    "daily_pnl": -32.50,
+    "consecutive_losses": 2
+  }
+}
+On BLOCK:
+
+json
+{
+  "permission": "BLOCK",
+  "active_specialist": null,
+  "direction": null,
+  "rejection_reasons": ["RISK_STATE_SHUTDOWN", "DAILY_LOSS_LIMIT_REACHED"]
+}
+11. NT8 + PYTHON IMPLEMENTATION ARCHITECTURE
+NinjaTrader 8 Components
+NinjaScript Strategy: AdaptiveExecutionStrategy.cs
+
+Subscribes to 5-minute bars (primary) and 1-minute bars (context)
+Calculates all features on bar close
+Serializes feature vector to JSON
+Maintains TCP socket client (PythonBridgeClient.cs)
+On bar close: send request, await response, act on response
+Manages orders: entry, stop, target via NT8 order management
+Enforces local emergency stop (if Python says execute but stop-loss distance looks wildly wrong)
+Handles connection loss: enters safe mode (no new entries, manage existing positions only)
+Logs every request/response pair to file
+NinjaScript Indicator: FeatureCalculator.cs
+
+Calculates all raw features: ATR, EMA, VWAP, volume ratios, OR, etc.
+Exposes feature values to the strategy via public properties
+Runs as a pure indicator with no execution logic
+NinjaScript: PythonBridgeClient.cs
+
+TCP client on loopback port (default: 5678)
+Synchronous request/response per bar
+Timeout: 2 seconds (if no response in 2 seconds → safe mode)
+Handles reconnect logic (retries every 5 seconds if disconnected)
+JSON serialization/deserialization
+NT8 Local Emergency Overrides (independent of Python):
+
+If position is open and price moves against 2× the sent stop distance → close position
+If daily loss exceeds hardcoded NT8-side limit → close all, disable strategy
+These are belt-and-suspenders. Python risk engine should prevent reaching these conditions.
+Python Components
+intelligence_server.py — Main server entry point
+
+Starts TCP socket server on port 5678
+Accepts connections from NT8
+Routes requests to pipeline
+Returns responses
+regime_classifier.py — Regime classification module
+
+Loads trained LightGBM model at startup
+classify(feature_vector) → regime probabilities and confidence
+Applies persistence filter (smoothed probabilities)
+Maintains regime history
+specialist_models.py — All specialist model logic
+
+SPEC1_TrendPullback.evaluate(features, regime_output) → quality score and signal
+SPEC2_ORBConfirmation.evaluate(...) → quality score and signal
+SPEC3_FailedBreakout.evaluate(...) → quality score and signal
+SPEC4_VWAPReversion.evaluate(...) → quality score and signal
+policy_selector.py — Policy decision engine
+
+select_policy(regime_output, specialist_outputs, event_context, risk_state) → policy output
+Maintains anti-thrashing state
+Tracks per-specialist performance counts
+risk_engine.py — Risk state machine
+
+check_permission(policy_output, instrument, position_context) → risk output
+Maintains session state: P&L, trades, losses, risk state
+session_reset() called at session open
+session_close() called at session end
+event_calendar.py — Event calendar manager
+
+Loads daily event JSON at startup
+get_event_flags(timestamp) → event context dict
+feature_store.py — Feature preprocessing
+
+Normalizes and transforms raw features from NT8
+Validates feature completeness
+Detects stale or anomalous features
+logger.py — Structured logging
+
+Logs every request/response pair with full context
+Session performance tracking
+Writes to daily log files
+Communication Specification
+Transport: TCP socket, loopback (127.0.0.1:5678), one persistent connection per session
+
+Protocol: Length-prefixed JSON. Each message is prefixed with a 4-byte little-endian integer indicating the length of the following JSON payload. This eliminates the fragmentation problem of raw TCP.
+
+Flow:
+
+NT8 sends request (length prefix + JSON)
+Python reads, processes, responds (length prefix + JSON)
+Repeat every bar close
+Timeout handling:
+
+NT8 waits maximum 2 seconds for response
+If timeout: NT8 enters safe mode (no new entries, manage existing stops only)
+Python side: if no request received for 10+ minutes during RTH → log warning
+Failure handling:
+
+If Python server crashes: NT8 detects disconnected socket, retries connection every 5 seconds, enters safe mode
+If NT8 crashes: Python server keeps listening, cleans session state on reconnect handshake
+If NT8 reconnects mid-session: Python server receives reconnect handshake with session_id + current session P&L to sync state
+Latency requirement: Target < 50ms per request/response cycle on loopback. LightGBM inference on 25 features is sub-millisecond. Total processing including all layers should be < 10ms. Socket round-trip on loopback is < 1ms. Margin is very comfortable.
+
+Reconnect Handshake Schema
+NT8 sends on connection:
+
+json
+{
+  "message_type": "CONNECT_HANDSHAKE",
+  "session_id": "20260404_MNQ",
+  "session_date": "2026-04-04",
+  "instrument": "MNQ",
+  "session_pnl": -32.50,
+  "open_position_size": 0,
+  "consecutive_losses": 2
+}
+Python responds:
+
+json
+{
+  "message_type": "CONNECT_ACK",
+  "session_id": "20260404_MNQ",
+  "risk_state": "REDUCED",
+  "reconnected": true,
+  "prior_session_trades": 2
+}
+Logging Design
+Every request/response pair is logged to:
+
+logs/YYYY-MM-DD/session_MNQ.jsonl — one JSON object per line
+Each entry includes: timestamp, full request, full response, latency_ms
+Daily summary file generated at session close
+Searchable, parseable, auditable
+12. TRAINING / VALIDATION / RETRAINING PIPELINE
+Raw Data Requirements
+5-minute OHLCV bars: minimum 18 months of clean data per instrument
+1-minute OHLCV bars: for feature context
+Daily OHLCV bars: for overnight context features
+Economic calendar: event dates, times, tiers (free from Investing.com or FRED)
+Session open/close timestamps (RTH and ETH)
+Data source: NT8 historical export, NinjaTrader Data, or Databento / Norgate (best quality)
+Quality requirements:
+
+Zero forward-leaking data
+Adjust for daylight saving time session boundaries
+Remove clearly erroneous bars (spike filters)
+Handle holidays and early closes explicitly
+Labeling Design
+Regime labels: Applied in hindsight at end of session. A human or rule-based labeler reviews each session's bar-by-bar price action and assigns regime context per 5-minute bar. This takes 1–2 hours per month of data. It is worth doing carefully — garbage labels produce garbage models.
+
+Specialist quality labels: Applied per individual setup instance. For each bar where a rule-based setup fires, label the outcome within the forward window (6 bars or 1× ATR, whichever comes first). Label 1 if the trade reached 1× ATR profit without hitting stop. Label 0 otherwise.
+
+Train/Validation/Test Design
+Use a strict walk-forward design — no shuffling, no cross-validation across time.
+
+Training data:    months 1–12 (in-sample)
+Validation data:  months 13–15 (offline tuning)
+Test data:        months 16–18 (untouched until final evaluation)
+Production:       rolling window, retrain monthly
+Walk-forward retraining:
+
+Retrain monthly on the most recent 12 months of data
+Validate on the most recent 2 months (out-of-sample)
+Deploy if out-of-sample performance meets minimum criteria
+Log all retraining events with performance metrics
+When to Retrain
+Retrain monthly on a fixed schedule for the regime classifier. Retrain specialist quality scorers when their rolling 30-trade performance drops below baseline. Retrain when feature drift is detected: If the distribution of any top-5 most important feature shifts by more than 1.5 standard deviations from training distribution, flag for review.
+
+When NOT to Retrain
+Do not retrain after 1–2 bad weeks (could be regime anomaly, not model decay)
+Do not retrain based on a single event day (news distortion)
+Do not retrain to "fix" the model's performance on the most recent 10 days — this is overfitting
+Do not retrain without reviewing the new training data for quality issues
+Regime Drift Monitoring
+Track the distribution of classified regimes over rolling 20-session windows. If the frequency of any regime shifts materially (> 2 standard deviations from 6-month historical frequency), flag for review. This can signal:
+
+Real regime shift in the market → possibly appropriate to retrain
+Classifier drift → possibly a data quality issue
+Session anomaly → wait for more data
+Model Decay Detection
+Track the following metrics per 10-trade rolling window:
+
+Specialist quality score vs actual outcome correlation
+Regime classifier accuracy on labeled test periods
+Daily P&L per regime
+If quality score correlation drops below 0.15 (essentially random), the quality scorer is no longer useful. Force rules-only mode and schedule immediate retraining.
+
+13. BUILD ORDER / DEVELOPMENT ROADMAP
+Phase 1: NT8 Data Export and Python Pipeline (Weeks 1–3)
+Deliverables:
+
+NT8 FeatureCalculator indicator computing all raw features
+NT8 strategy that logs features to CSV on every bar
+Python script that reads the CSV and validates feature quality
+Event calendar loader and parser
+Basic logging infrastructure
+Success criteria:
+
+Can export 60 days of 5-minute features cleanly
+Feature values match manual indicator calculations
+No missing bars, no lookahead features
+Pipeline runs without errors end-to-end
+Must prove before advancing: Feature data is point-in-time clean. Zero lookahead. All values sensible.
+
+Phase 2: Regime Classifier (Weeks 4–6)
+Deliverables:
+
+Labeled training dataset (12 months, regime labels)
+Trained LightGBM regime classifier
+Walk-forward validation results
+Persistence filter and smoothed regime output
+Python regime classifier module with unit tests
+Success criteria:
+
+Walk-forward classification accuracy > 55% on primary regime (better than random baseline of ~1/13)
+Probability calibration: high-confidence predictions should be materially more accurate than low-confidence ones
+Stable regime output (persistence filter working; no rapid flipping on stable days)
+Must prove before advancing: Regime classifier is meaningfully better than a random or rules-only baseline on out-of-sample data.
+
+Phase 3: First Specialist Model — SPEC-1 Trend Pullback (Weeks 7–9)
+Deliverables:
+
+SPEC-1 rule-based setup detector
+SPEC-1 LightGBM quality scorer (trained on labeled setup instances)
+Backtested performance of SPEC-1 under correct regime conditions
+SPEC-1 performance under wrong regime conditions (for validation)
+Success criteria:
+
+SPEC-1 setups in TREND_UP/TREND_DOWN regimes show positive expectancy > 0 in backtest
+SPEC-1 setups in RANGE regimes show negative or near-zero expectancy (validates regime gating)
+Sharpe ratio of SPEC-1 alone (regime-gated) > 0.8 on walk-forward test
+Must prove before advancing: SPEC-1 generates positive expectancy specifically when the regime classifier says it should. Not just in backtest globally.
+
+Phase 4: TCP Socket Communication Architecture (Weeks 10–11)
+Deliverables:
+
+Python TCP server (intelligence_server.py)
+NT8 TcpClient integration
+Full request/response JSON schemas implemented
+Timeout and reconnect handling
+Handshake protocol
+End-to-end test: NT8 sends feature request, Python responds with mock permission
+Success criteria:
+
+Successful round-trip latency < 50ms consistently
+Reconnect works correctly after Python restart
+NT8 enters safe mode correctly on disconnect
+All messages logged correctly
+Phase 5: Policy Selector and Risk Engine (Weeks 12–14)
+Deliverables:
+
+Policy selector state machine with full decision table
+Risk engine with session state management
+Session reset and close logic
+Unit tests for all risk engine state transitions (this is critical)
+Integration test: full pipeline from NT8 bar data to final permission response
+Success criteria:
+
+Risk engine correctly blocks trades at every defined threshold
+Risk engine correctly sequences state transitions (NORMAL → REDUCED → DEFENSIVE → PAUSED → SHUTDOWN)
+Policy selector anti-thrashing filter working correctly
+No trade can be placed when risk engine says SHUTDOWN
+Phase 6: Paper Trading Simulation (Weeks 15–18)
+Deliverables:
+
+Full system running in NT8 simulation mode with live market data
+All components active and integrated
+Daily performance log review
+Weekly performance vs expectations check
+Success criteria:
+
+System operates without software errors for 15 consecutive trading days
+Risk engine correctly terminates all trading sessions without human intervention
+No communication failures in 15 days
+P&L directionally positive (not necessarily highly profitable — just confirming the system works as designed)
+Phase 7: Second Specialist Model — SPEC-4 VWAP Reversion (Weeks 19–21)
+Add SPEC-4 while paper trading continues. Follow same build/backtest/validate pattern.
+
+Phase 8: Micro-Contract Live Deployment (Weeks 22–26)
+Deliverables:
+
+System running live on 1 MNQ or 1 MES contract
+All risk limits at personal account levels
+Daily review of live trades vs expected behavior
+Success criteria:
+
+60 live trading days without risk engine failure
+Real-time performance consistent with paper trading performance
+No position sizing errors, no unintended trades
+Risk engine functioning correctly against live fills
+Phase 9: Prop-Firm-Safe Refinement (Weeks 27+)
+Add SPEC-2 and SPEC-3. Adjust risk parameters for prop firm account. Only after 60+ days of successful live micro trading.
+
+14. MINIMUM VIABLE SYSTEM VS LATER VERSIONS
+Version 1 — Minimum Viable System
+Components:
+
+NT8 feature exporter (full)
+Regime classifier (LightGBM, 6 regimes initially — reduce to manageable set)
+SPEC-1 (Trend Pullback, rule-based only, no ML quality scorer)
+SPEC-5 (Stand-Down)
+Policy selector (simplified: regime → allowed/not allowed, binary)
+Risk engine (full — never simplify this)
+TCP communication (full)
+Event calendar (Tier 1 and 2 events only)
+Intentionally excluded:
+
+SPEC-2, SPEC-3, SPEC-4
+ML quality scoring for SPEC-1
+Anti-thrashing filter in policy (replace with 3-bar minimum hold)
+Per-specialist performance tracking
+Specialist-level size multipliers
+Tradeoffs:
+
+Fewer edges exploited → fewer opportunities → more conservative P&L
+Simpler to debug → fewer places to fail
+Regime classifier doing more of the heavy lifting for quality gating
+Why appropriate: Building and operating even this simplified system correctly takes 3–4 months. Proving it works is more valuable than having more features.
+
+Version 2 — Operational System
+Adds:
+
+SPEC-2 (ORB Confirmation)
+SPEC-4 (VWAP Reversion)
+ML quality scorers for SPEC-1 and SPEC-4
+Full policy selector (with anti-thrashing filter, per-specialist tracking)
+Per-specialist performance tracking and session suppression
+Full 13-regime classifier
+Gain protection logic in risk engine
+Feature drift monitoring
+Tradeoffs:
+
+More complexity to maintain
+Two more models to keep calibrated
+Higher signal count → more exposure to model error
+But also meaningfully more edge exploited
+Appropriate after: 60+ live trading days of V1 performing as expected.
+
+Version 3 — Advanced System
+Adds:
+
+SPEC-3 (Failed Breakout Reversal)
+Second instrument (MES alongside MNQ, or MGC)
+Online quality scorer drift detection
+Automated daily retraining pipeline
+Full feature drift monitoring and alerting
+More sophisticated regime transition handling
+Tradeoffs:
+
+SPEC-3 is the most dangerous model; requires most mature risk engine
+Multi-instrument adds correlation risk
+Automated retraining requires careful guardrails
+Appropriate after: 6+ months of profitable V2 performance, stable risk engine operation, full logging infrastructure proven.
+
+15. FAILURE MODES AND KILL SWITCHES
+1. Regime Classifier Overfitting
+Why it happens: Labels are assigned in hindsight; features leak information about the future; training data is too short. Danger level: HIGH — wrong regime → wrong specialist → systematic losses. Detection: Out-of-sample regime accuracy degrades; specialist models lose money in regimes they should win in. Kill switch: If specialist win rate under a specific regime drops below 35% over 20 trades, suppress that specialist for that regime permanently until retrained.
+
+2. Unstable Regime Flipping
+Why it happens: Classifier uncertainty near regime boundaries causes rapid oscillation. Danger level: MEDIUM — causes policy thrashing, multiple position changes, overtrading costs. Detection: Anti-thrashing filter fires more than 3 times per session. Kill switch: Force minimum 3-bar regime persistence. If flipping persists → raise confidence threshold to 0.65 for that session.
+
+3. Specialist Model Operates in Wrong Regime
+Why it happens: Policy selector logic error, regime classification error, edge case not covered in decision table. Danger level: HIGH — model designed for one condition deployed in opposite condition. Detection: Log every trade with the regime at entry time. If SPEC-1 fires during RANGE_BOUND → immediate audit. Kill switch: Policy selector must perform explicit regime-specialist compatibility check before every approval. Incompatible combination → hard reject regardless of quality score.
+
+4. Policy Thrashing
+Why it happens: Low regime confidence → rapid oscillation between specialists or between active and standdown. Danger level: MEDIUM — operational chaos, position whipsawing. Detection: More than 3 policy state changes in 6 bars. Kill switch: Anti-thrashing filter forces STANDDOWN for 3 bars when detected.
+
+5. Event-Day Misclassification
+Why it happens: Pre-event calm → classifier sees low volatility → classifies as RANGE or COMPRESSION → specialists try to enter right before a CPI print. Danger level: VERY HIGH — can produce catastrophic slippage. Detection: Event calendar must override classifier output. If event_imminent = true → STANDDOWN regardless of regime. Kill switch: Event calendar check runs FIRST in the pipeline, before regime classifier output reaches policy selector. The calendar is a hard override, not a soft suggestion.
+
+6. NT8/Python Communication Failure
+Why it happens: Python crashes, network hiccup, garbage JSON, timeout. Danger level: MEDIUM — system cannot trade intelligently without Python. Detection: NT8 timeout on socket receive. Kill switch: NT8 enters SAFE MODE: no new entries, actively manage existing position stops, alert human. NT8 should NEVER trade without Python confirmation — the risk of random entries without intelligent oversight is worse than missing trades.
+
+7. Slippage Spikes
+Why it happens: Trading during news, low liquidity, bid-ask spread expansion. Danger level: MEDIUM-HIGH — small accounts can lose an entire trade's value to slippage. Detection: Track fill price vs order price. If slippage > 0.5 ATR on 3+ trades → flag. Kill switch: If average slippage exceeds 30% of expected stop distance → force session review. Block certain regimes (VOLATILITY_EXPANSION, NEWS_DISTORTED) where slippage risk is highest.
+
+8. Data Feed Problems
+Why it happens: NT8 data feed disconnects, stale bars, data gaps. Danger level: HIGH — stale features → wrong signals. Detection: Feature validation layer checks for stale timestamps, impossible values (zero ATR, zero volume), and bar gaps. Kill switch: If feature vector fails validation → Python returns BLOCK. Never trade on potentially stale data.
+
+9. Inference Lag
+Why it happens: Python server overloaded, model becomes too large, network congestion. Danger level: LOW-MEDIUM — delays entry, may miss bar close execution window. Detection: Log latency for every request. Alert if > 100ms. Kill switch: Timeout = 2 seconds. If exceeded → BLOCK. The trade is not worth the uncertainty.
+
+10. Correlated Losses Across Instruments
+Why it happens: Trading NQ and ES simultaneously in same direction during a correlated sell-off; both models lose simultaneously. Danger level: HIGH — doubles drawdown velocity. Kill switch (preventive): Only trade one instrument at a time in V1 and V2. If multi-instrument trading is added in V3, impose a correlated-loss detection rule: if both instruments are in losing positions simultaneously → close the worse performer immediately.
+
+11. False Confidence During Unusual Regimes
+Why it happens: Model trained on normal market conditions sees an unusual regime (RISK_OFF, flash crash, circuit breaker) and confidently misclassifies it. Danger level: HIGH — confident wrong classification is worse than low-confidence classification. Detection: Monitor for ATR ratio > 2.5 (extreme volatility outlier). This almost always means unusual conditions. Kill switch: If ATR ratio > 2.0 → force DEFENSIVE. If ATR ratio > 3.0 → force SHUTDOWN regardless of classifier output.
+
+16. FINAL RECOMMENDED ARCHITECTURE
+The Definitive Design
+Architecture name: Python Intelligence Server + NT8 Execution Client, TCP Socket Protocol
+
+Exact module list:
+
+Python Side:
+├── intelligence_server.py      (TCP server, request routing)
+├── regime_classifier.py        (LightGBM, 13 regimes, smoothed output)
+├── specialists/
+│   ├── spec1_trend_pullback.py (rule-based + LightGBM quality scorer)
+│   ├── spec4_vwap_reversion.py (rule-based, build in V2)
+│   ├── spec2_orb.py            (rule-based, build in V2)
+│   ├── spec3_failed_breakout.py (rule-based, build in V3)
+│   └── spec5_standdown.py      (explicit no-trade module)
+├── policy_selector.py          (deterministic state machine)
+├── risk_engine.py              (stateful, hardcoded arithmetic)
+├── event_calendar.py           (daily JSON calendar loader)
+├── feature_store.py            (feature preprocessing + validation)
+└── logger.py                   (structured JSON logging)
+
+NinjaTrader 8 Side:
+├── AdaptiveExecutionStrategy.cs    (main strategy, orders)
+├── FeatureCalculator.cs            (indicator, all features)
+└── PythonBridgeClient.cs           (TCP client, JSON protocol)
+First Two Specialist Strategies to Build
+SPEC-1: Trend Pullback Continuation — Most versatile, most data, clearest setup
+SPEC-4: VWAP Mean Reversion — Complements SPEC-1, works in different regimes, high prop-firm fit
+First Instruments to Trade
+Start with MNQ only.
+
+Why:
+
+Micro contract = $2/point → $10 per ATR unit (roughly) → manageable risk per trade on small account
+Highly liquid, tight spreads during RTH
+Excellent data quality
+Well-studied price structure
+Stop and target distances are quantifiable without exotic data
+Do not start with CL/MCL — crude oil volatility during inventory reports is brutal for small accounts and difficult regime behavior is the norm. GC/MGC is acceptable as a second instrument after 60+ days of MNQ success, because micro gold is lower volatility per dollar than micro crude.
+
+Contract Sizing Guidance
+For a $2,000 account trading MNQ:
+
+1 MNQ = $2/point = $10 per 5-point move
+Risk $40 per trade (2% of $2,000)
+With stop distance of 13–15 points on MNQ → risk = ~$26–30 per trade
+This fits comfortably within the $40 limit
+Start with 1 MNQ only, no pyramiding, no scaling
+In DEFENSIVE mode → size to 1 MNQ (minimum; can't go smaller)
+V3 might add 2 MNQ, but only after sustained profitability
+For a $2,000 prop firm drawdown account:
+
+Same sizing as above
+Risk no more than $50/trade
+Daily loss limit hard-coded at $100 (5% of drawdown limit, well inside firm's limit)
+Risk Engine Priorities (In Order)
+Daily loss limit — absolute, non-negotiable
+Per-trade risk dollar limit — absolute
+Event blackout windows — absolute
+ATR ratio volatility check — absolute
+Consecutive loss limit — absolute
+Regime confidence minimum — semi-hard (gates specialists, not emergency shutdown)
+Gain protection lock — protective, not emergency
+NT8/Python Communication Final Design
+Transport: TCP socket, loopback, port 5678
+Protocol: Length-prefixed JSON
+Frequency: Once per 5-minute bar close
+Timeout: 2 seconds
+Fallback: SAFE MODE (no new entries)
+Logging: Full request/response to JSONL file daily
+Development Order
+Feature exporter + data pipeline (prove data quality)
+Regime classifier (prove regime detection works)
+SPEC-1 rule-based (prove specialist logic works)
+TCP communication bridge (prove architecture works)
+Risk engine (prove safety system works)
+Policy selector (prove decision logic works)
+Integrated paper trading (prove it all works together)
+SPEC-4 addition
+Live micro trading
+Safest Path from Research to Live
+Research → Backtest → Walk-forward validate → Paper trade 30 days → 
+Paper trade 15 more days stress-testing edge cases → 
+Live 1 MNQ small account 30 days → 
+Live 1 MNQ prop account (after 30 profitable days) →
+Expand to 2 specialists and potentially 2 instruments
+Never rush any transition. The purpose of each stage is to prove the previous stage was not luck.
+
+17. CODE-READY DELIVERABLES
+A. System Blueprint
+MARKET DATA (NT8 live feed)
+    → FEATURE CALCULATOR (NT8 indicator)
+    → TCP JSON REQUEST to Python server
+        → FEATURE VALIDATION (Python)
+        → REGIME CLASSIFIER (LightGBM, 13 classes)
+        → SPECIALIST MODELS (rule-based + quality scorer per specialist)
+        → POLICY SELECTOR (deterministic state machine)
+        → RISK ENGINE (session-state arithmetic rules)
+        → TCP JSON RESPONSE to NT8
+    → EXECUTION ENGINE (NT8 order management)
+    → LOGGING (both sides)
+B. Component Diagram
+┌─────────────────────────────────────────────────────────────────┐
+│                     PYTHON INTELLIGENCE SERVER                   │
+│                                                                  │
+│  ┌──────────────┐    ┌─────────────────────────────────────────┐│
+│  │ FEATURE      │    │ INTELLIGENCE PIPELINE                    ││
+│  │ VALIDATOR    │───>│  ┌───────────────────────────────────┐  ││
+│  └──────────────┘    │  │  1. REGIME CLASSIFIER (LightGBM)  │  ││
+│                      │  └─────────────────┬─────────────────┘  ││
+│  ┌──────────────┐    │                    │                     ││
+│  │ EVENT        │───>│  ┌─────────────────▼─────────────────┐  ││
+│  │ CALENDAR     │    │  │  2. SPECIALIST MODELS             │  ││
+│  └──────────────┘    │  │     SPEC1 / SPEC4 / SPEC2 / SPEC3 │  ││
+│                      │  └─────────────────┬─────────────────┘  ││
+│  ┌──────────────┐    │                    │                     ││
+│  │ RISK ENGINE  │<──>│  ┌─────────────────▼─────────────────┐  ││
+│  │ (Session     │    │  │  3. POLICY SELECTOR               │  ││
+│  │  State)      │    │  └─────────────────┬─────────────────┘  ││
+│  └──────────────┘    │                    │                     ││
+│                      │  ┌─────────────────▼─────────────────┐  ││
+│  ┌──────────────┐    │  │  4. RISK ENGINE GATE              │  ││
+│  │ LOGGER       │    │  └─────────────────┬─────────────────┘  ││
+│  └──────────────┘    └────────────────────┼─────────────────────┘│
+└───────────────────────────────────────────│─────────────────────┘
+                                            │ TCP JSON
+┌───────────────────────────────────────────│─────────────────────┐
+│                     NINJATRADER 8         │                      │
+│  ┌──────────────┐  ┌──────────────┐  ┌───▼──────────────────┐  │
+│  │ MARKET DATA  │─>│ FEATURE      │  │ EXECUTION ENGINE     │  │
+│  │ (5-min bars) │  │ CALCULATOR   │  │ (Orders, Stops,      │  │
+│  └──────────────┘  └──────┬───────┘  │  Targets)            │  │
+│                           │          └──────────────────────┘  │
+│                    ┌──────▼──────────────────────────────────┐  │
+│                    │  PYTHON BRIDGE CLIENT (TCP Socket)       │  │
+│                    └─────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+C. Raw Data Inputs Required
+- 5-minute OHLCV bars (MNQ, primary)
+- 1-minute OHLCV bars (MNQ, for context calculations)
+- Daily OHLCV bars (MNQ, for prior day structure)
+- Session timestamps (RTH open/close in ET)
+- Economic calendar (date, time ET, event name, tier, instruments affected)
+- Overnight high/low (ETH session data)
+- Opening range (first 30-minute high/low of RTH)
+- Volume by bar (not tick-level required; bar-level sufficient)
+- VWAP from session open (calculated, not raw)
+D. Engineered Features by Layer
+Regime Classifier (15 features):
+
+atr_ratio_14_20d        # Current ATR / 20-day avg ATR
+atr_slope               # ATR change over 10 bars
+efficiency_ratio_20     # Trend persistence (net / total move)
+vwap_distance_atr       # (Price - VWAP) / ATR
+vwap_slope_10           # VWAP direction over 10 bars
+or_size_ratio           # Opening range / 5-day avg OR
+relative_volume_10      # Current vol / 10-bar avg vol
+chop_rate_20            # Direction changes / 20 bars
+gap_ratio               # Gap size / prior ATR (signed)
+session_phase           # 0=open, 1=midday, 2=close
+event_flag_imminent     # Binary: major event <30 min
+event_flag_recent       # Binary: major event <120 min ago
+ema_slope_10            # Linear slope of 20-EMA over 10 bars
+vwap_crossings_30       # VWAP crosses in prior 30 bars
+max_run_length_20       # Longest consecutive same-direction close run
+SPEC-1 Features (5 features):
+
+pullback_depth_atr      # (Price - 20EMA) / ATR
+pullback_volume_ratio   # Last 3-bar vol / 10-bar avg vol
+ema_slope_at_pullback   # EMA direction at setup bar
+swing_distance_atr      # Distance to prior swing in ATR
+bar_close_quality       # (Close - Low) / (High - Low)
+SPEC-4 Features (5 features):
+
+vwap_deviation_atr      # (Price - VWAP) / ATR (absolute)
+vwap_slope_flatness     # |VWAP slope| — lower=better for reversion
+time_of_day_midday      # Binary: in 11:30–1:30 ET window
+relative_volume_low     # Bar vol / 10-bar avg (low=better)
+reversal_bar_quality    # Wick direction + close toward VWAP score
+Policy Selector Inputs:
+
+regime_probabilities[13]       # Full vector
+regime_confidence              # Primary prob scalar
+specialist_quality_scores[N]   # Per specialist
+event_flag_imminent
+session_phase
+risk_state                     # Categorical
+consecutive_losses             # Integer
+daily_pnl_pct                  # Float
+specialist_rolling_winrate[N]  # Per specialist, last 10 trades
+Risk Engine Inputs:
+
+session_realized_pnl
+session_high_water_pnl
+open_position_size
+open_unrealized_pnl
+consecutive_losses_count
+session_trades_count
+current_atr_ratio
+event_flag_imminent
+current_time_et
+current_risk_state
+E. Regime Labels
+0:  TREND_UP
+1:  TREND_DOWN
+2:  RANGE_BOUND
+3:  BREAKOUT_CONTINUATION
+4:  BREAKOUT_FAILURE
+5:  MEAN_REVERSION
+6:  VOLATILITY_EXPANSION
+7:  VOLATILITY_COMPRESSION
+8:  OPENING_DRIVE
+9:  MIDDAY_CHOP
+10: NEWS_DISTORTED
+11: RISK_OFF
+12: NO_TRADE
+F. Specialist Strategy Modules
+SPEC1_TrendPullback         — Trend continuation after pullback to 20-EMA
+SPEC2_ORBConfirmation       — Opening range breakout with volume confirmation
+SPEC3_FailedBreakout        — Reversal after liquidity sweep beyond structure
+SPEC4_VWAPReversion         — Mean reversion to VWAP during low-volatility range
+SPEC5_StandDown             — Explicit no-trade; never sends entry signals
+G. Policy Decision Table
+Regime              | Confidence | Event     | Phase   | Risk      | Output
+--------------------|------------|-----------|---------|-----------|----------------------------------
+TREND_UP/DOWN       | ≥0.60      | None      | Normal  | NORMAL    | SPEC1, full direction, size=1.0
+TREND_UP/DOWN       | 0.40-0.59  | None      | Normal  | NORMAL    | SPEC1, full direction, size=0.5
+TREND_UP/DOWN       | <0.40      | Any       | Any     | Any       | STANDDOWN
+TREND_UP/DOWN       | ≥0.60      | IMMINENT  | Any     | Any       | STANDDOWN
+BREAKOUT_CONT       | ≥0.60      | None      | Normal  | NORMAL    | SPEC1, full direction, size=1.0
+BREAKOUT_CONT       | ≥0.60      | None      | Normal  | REDUCED   | SPEC1, full direction, size=0.5
+BREAKOUT_FAIL       | ≥0.60      | None      | Normal  | NORMAL    | SPEC3, counter direction, size=0.5
+RANGE_BOUND         | ≥0.55      | None      | Midday  | NORMAL    | SPEC4, both directions, size=1.0
+RANGE_BOUND         | ≥0.55      | None      | Open/Cl | NORMAL    | SPEC4, both directions, size=0.5
+OPENING_DRIVE       | ≥0.65      | None      | Open90  | NORMAL    | SPEC2, aligned direction, size=1.0
+MIDDAY_CHOP         | ≥0.55      | None      | Midday  | NORMAL    | SPEC4, size=0.5
+VOLATILITY_EXP      | Any        | Any       | Any     | Any       | STANDDOWN
+NEWS_DISTORTED      | Any        | Any       | Any     | Any       | STANDDOWN
+RISK_OFF            | Any        | Any       | Any     | Any       | STANDDOWN
+Any                 | Any        | IMMINENT  | Any     | Any       | STANDDOWN
+Any                 | Any        | Any       | First15 | Any       | STANDDOWN
+Any                 | Any        | Any       | Last15  | Any       | STANDDOWN
+Any                 | Any        | Any       | Any     | SHUTDOWN  | STANDDOWN
+H. Risk Control Table
+Trigger                           | Threshold            | Response
+----------------------------------|----------------------|----------------------------
+Per-trade risk                    | >$40 personal        | Block trade
+Per-trade risk                    | >$50 prop            | Block trade
+Daily loss                        | >$50 (personal)      | REDUCED state
+Daily loss                        | >$60 (personal)      | DEFENSIVE state
+Daily loss                        | >$80 (personal)      | SHUTDOWN
+Daily loss                        | >$60 (prop)          | REDUCED state
+Daily loss                        | >$80 (prop)          | DEFENSIVE state
+Daily loss                        | >$100 (prop)         | SHUTDOWN
+Consecutive losses                | ≥2                   | Size × 0.75
+Consecutive losses                | ≥3                   | PAUSED 30 min → REDUCED
+Daily gain protection trigger     | Gain >$60 personal   | Lock: max give-back = half gain
+ATR ratio                         | >2.0                 | DEFENSIVE
+ATR ratio                         | >3.0                 | SHUTDOWN
+Event imminent (Tier 1/2)         | Within window        | STANDDOWN
+Post-event blackout (Tier 1)      | 0-20 min after       | STANDDOWN
+Max trades per day (personal)     | >4 trades            | No new entries
+Max trades per day (prop)         | >5 trades            | No new entries
+Model underperformance            | Win rate <35%/10 trd | DEFENSIVE for session
+I. Recommended Project Structure
+project/
+├── ninjatrader/
+│   ├── AdaptiveExecutionStrategy.cs
+│   ├── FeatureCalculator.cs
+│   └── PythonBridgeClient.cs
+├── python/
+│   ├── intelligence_server.py
+│   ├── regime_classifier.py
+│   ├── policy_selector.py
+│   ├── risk_engine.py
+│   ├── event_calendar.py
+│   ├── feature_store.py
+│   ├── logger.py
+│   └── specialists/
+│       ├── __init__.py
+│       ├── spec1_trend_pullback.py
+│       ├── spec2_orb.py
+│       ├── spec3_failed_breakout.py
+│       ├── spec4_vwap_reversion.py
+│       └── spec5_standdown.py
+├── models/
+│   ├── regime_classifier_v1.pkl
+│   ├── spec1_quality_scorer_v1.pkl
+│   └── model_metadata.json
+├── data/
+│   ├── raw/
+│   ├── processed/
+│   └── labels/
+├── research/
+│   ├── labeling/
+│   ├── training/
+│   ├── validation/
+│   └── notebooks/
+├── config/
+│   ├── account_config.json
+│   ├── risk_config.json
+│   └── instrument_config.json
+├── calendars/
+│   └── events_YYYY-MM-DD.json
+├── logs/
+│   └── YYYY-MM-DD/
+└── tests/
+    ├── test_risk_engine.py
+    ├── test_policy_selector.py
+    └── test_regime_classifier.py
+J. Pseudocode: Live Decision Loop
+python
+# Python Intelligence Server — Per-Request Processing
+
+def handle_request(request: dict) -> dict:
+    
+    # Step 0: Validate incoming features
+    features = feature_store.validate_and_preprocess(request)
+    if features is None:
+        return build_block_response("INVALID_FEATURES")
+    
+    # Step 1: Get event context (FIRST — hard override)
+    event_ctx = event_calendar.get_event_flags(request["timestamp"])
+    if event_ctx["event_imminent"]:
+        return build_block_response("EVENT_BLACKOUT")
+    
+    # Step 2: Check session phase (hard override)
+    session_phase = get_session_phase(request["timestamp"])
+    if session_phase in ["PRE_OPEN", "FIRST_15", "LAST_15", "AFTER_CLOSE"]:
+        return build_block_response("SESSION_PHASE_BLOCK")
+    
+    # Step 3: Run regime classifier
+    regime_output = regime_classifier.classify(features)
+    
+    # Step 4: Run allowed specialists
+    specialist_outputs = {}
+    for specialist_id in get_allowed_specialists(regime_output):
+        specialist = get_specialist(specialist_id)
+        specialist_outputs[specialist_id] = specialist.evaluate(
+            features, regime_output
+        )
+    
+    # Step 5: Policy selector
+    policy_output = policy_selector.select_policy(
+        regime_output=regime_output,
+        specialist_outputs=specialist_outputs,
+        event_ctx=event_ctx,
+        session_phase=session_phase,
+        risk_state=risk_engine.get_current_state()
+    )
+    
+    # Step 6: Risk engine gate (LAST — cannot be overridden)
+    risk_output = risk_engine.check_permission(
+        policy_output=policy_output,
+        instrument=request["instrument"]
+    )
+    
+    # Step 7: Build response
+    response = build_response(policy_output, risk_output, regime_output)
+    
+    # Step 8: Log everything
+    logger.log_decision(request, response, regime_output, 
+                        specialist_outputs, policy_output, risk_output)
+    
+    return response
+K. Pseudocode: Risk Engine
+python
+class RiskEngine:
+    def __init__(self, account_config):
+        self.account_type = account_config["type"]  # "personal" or "prop"
+        self.max_risk_per_trade = account_config["max_risk_per_trade"]
+        self.daily_loss_limit = account_config["daily_loss_limit"]
+        self.max_trades_per_day = account_config["max_trades_per_day"]
+        self.max_consecutive_losses = account_config["max_consecutive_losses"]
+        
+        # Session state — reset daily
+        self.session_pnl = 0.0
+        self.session_high_water = 0.0
+        self.session_trades = 0
+        self.consecutive_losses = 0
+        self.risk_state = "NORMAL"
+        self.paused_until = None
+        self.shutdown = False
+        self.gain_protection_active = False
+        self.gain_protection_floor = None
+
+    def session_reset(self):
+        """Call at session open"""
+        self.session_pnl = 0.0
+        self.session_high_water = 0.0
+        self.session_trades = 0
+        self.consecutive_losses = 0
+        self.risk_state = "NORMAL"
+        self.paused_until = None
+        self.shutdown = False
+        self.gain_protection_active = False
+        self.gain_protection_floor = None
+
+    def update_pnl(self, trade_pnl: float):
+        """Call after every closed trade"""
+        self.session_pnl += trade_pnl
+        self.session_trades += 1
+        
+        if trade_pnl < 0:
+            self.consecutive_losses += 1
+        else:
+            self.consecutive_losses = 0
+            
+        if self.session_pnl > self.session_high_water:
+            self.session_high_water = self.session_pnl
+        
+        # Update gain protection
+        gain_trigger = account_config["gain_protection_trigger"]
+        if (not self.gain_protection_active and 
+                self.session_pnl >= gain_trigger):
+            self.gain_protection_active = True
+            self.gain_protection_floor = self.session_pnl / 2
+        
+        self._evaluate_state()
+
+    def _evaluate_state(self):
+        """Update risk state based on current session metrics"""
+        
+        # Check shutdown conditions first
+        if self.session_pnl <= -self.daily_loss_limit:
+            self.shutdown = True
+            self.risk_state = "SHUTDOWN"
+            return
+            
+        if (self.gain_protection_active and 
+                self.session_pnl <= self.gain_protection_floor):
+            self.shutdown = True
+            self.risk_state = "SHUTDOWN"
+            return
+        
+        # Check pause condition
+        if self.consecutive_losses >= self.max_consecutive_losses:
+            self.paused_until = now() + timedelta(minutes=30)
+            self.risk_state = "PAUSED"
+            return
+        
+        # Check defensive threshold
+        if self.session_pnl <= -(self.daily_loss_limit * 0.75):
+            self.risk_state = "DEFENSIVE"
+            return
+        
+        # Check reduced threshold
+        if self.session_pnl <= -(self.daily_loss_limit * 0.50):
+            self.risk_state = "REDUCED"
+            return
+        
+        # If paused period expired, transition to REDUCED
+        if (self.risk_state == "PAUSED" and 
+                self.paused_until and now() > self.paused_until):
+            self.risk_state = "REDUCED"
+            self.paused_until = None
+            return
+        
+        # Default to NORMAL if none of above triggered
+        if self.risk_state not in ["PAUSED", "REDUCED", "DEFENSIVE"]:
+            self.risk_state = "NORMAL"
+
+    def check_permission(self, policy_output, instrument, atr_ratio) -> dict:
+        
+        self._evaluate_state()
+        
+        # Hard ATR ratio checks
+        if atr_ratio > 3.0:
+            return {"trade_permitted": False, "reason": "ATR_EXTREME_VOLATILITY",
+                    "risk_state": "SHUTDOWN"}
+        
+        if atr_ratio > 2.0 and self.risk_state == "NORMAL":
+            self.risk_state = "DEFENSIVE"
+        
+        # Hard checks
+        if self.shutdown:
+            return {"trade_permitted": False, "reason": "SESSION_SHUTDOWN",
+                    "risk_state": self.risk_state}
+        
+        if self.risk_state == "PAUSED":
+            return {"trade_permitted": False, "reason": "SYSTEM_PAUSED",
+                    "risk_state": self.risk_state}
+        
+        if self.session_trades >= self.max_trades_per_day:
+            return {"trade_permitted": False, "reason": "MAX_TRADES_REACHED",
+                    "risk_state": self.risk_state}
+        
+        if policy_output["no_trade_flag"]:
+            return {"trade_permitted": False, "reason": "POLICY_STANDDOWN",
+                    "risk_state": self.risk_state}
+        
+        # Compute size multiplier
+        base_multiplier = policy_output.get("size_multiplier", 1.0)
+        risk_multiplier = {
+            "NORMAL": 1.0,
+            "REDUCED": 0.5,
+            "DEFENSIVE": 0.25,
+        }.get(self.risk_state, 0.0)
+        
+        final_multiplier = base_multiplier * risk_multiplier
+        
+        return {
+            "trade_permitted": True,
+            "risk_state": self.risk_state,
+            "size_multiplier": final_multiplier,
+            "max_risk_this_trade": self.max_risk_per_trade * risk_multiplier,
+            "daily_pnl": self.session_pnl,
+            "consecutive_losses": self.consecutive_losses
+        }
+L. Pseudocode: NT8-to-Python Communication
+csharp
+// PythonBridgeClient.cs (NinjaTrader 8)
+
+public class PythonBridgeClient
+{
+    private TcpClient _client;
+    private NetworkStream _stream;
+    private readonly string _host = "127.0.0.1";
+    private readonly int _port = 5678;
+    private readonly int _timeoutMs = 2000;
+    private bool _safeMode = false;
+    
+    public bool IsConnected => _client?.Connected ?? false;
+    
+    public void Connect()
+    {
+        try {
+            _client = new TcpClient();
+            _client.ReceiveTimeout = _timeoutMs;
+            _client.SendTimeout = _timeoutMs;
+            _client.Connect(_host, _port);
+            _stream = _client.GetStream();
+            _safeMode = false;
+            SendHandshake();
+        }
+        catch (Exception ex) {
+            EnterSafeMode($"Connection failed: {ex.Message}");
+        }
+    }
+    
+    public DecisionResponse RequestDecision(FeatureVector features)
+    {
+        if (!IsConnected) {
+            TryReconnect();
+            if (!IsConnected) return SafeModeResponse();
+        }
+        
+        try {
+            // Build request JSON
+            var request = BuildRequestJson(features);
+            var requestBytes = Encoding.UTF8.GetBytes(request);
+            
+            // Send length prefix (4 bytes, little-endian) + JSON
+            var lengthPrefix = BitConverter.GetBytes(requestBytes.Length);
+            _stream.Write(lengthPrefix, 0, 4);
+            _stream.Write(requestBytes, 0, requestBytes.Length);
+            
+            // Read response with timeout
+            var lengthBuf = new byte[4];
+            ReadExact(_stream, lengthBuf, 0, 4);
+            int responseLength = BitConverter.ToInt32(lengthBuf, 0);
+            
+            var responseBuf = new byte[responseLength];
+            ReadExact(_stream, responseBuf, 0, responseLength);
+            
+            var responseJson = Encoding.UTF8.GetString(responseBuf);
+            _safeMode = false;
+            return ParseResponse(responseJson);
+        }
+        catch (Exception ex) {
+            EnterSafeMode($"Communication error: {ex.Message}");
+            return SafeModeResponse();
+        }
+    }
+    
+    private void EnterSafeMode(string reason)
+    {
+        _safeMode = true;
+        LogMessage($"SAFE_MODE_ACTIVATED: {reason}");
+        // NT8 strategy will see SafeModeResponse and halt new entries
+    }
+    
+    private DecisionResponse SafeModeResponse()
+    {
+        return new DecisionResponse {
+            Permission = "BLOCK",
+            Reason = "PYTHON_DISCONNECTED_SAFE_MODE"
+        };
+    }
+    
+    private void TryReconnect()
+    {
+        // Attempt reconnect once; strategy handles retry timing
+        try { Connect(); } catch { }
+    }
+}
+csharp
+// AdaptiveExecutionStrategy.cs — OnBarUpdate excerpt
+
+protected override void OnBarUpdate()
+{
+    if (CurrentBar < 20) return; // Need enough bars for features
+    if (BarsInProgress != 0) return; // Only act on primary series
+    
+    // Build feature vector from FeatureCalculator indicator
+    var features = new FeatureVector {
+        Timestamp = Time[0],
+        Instrument = Instrument.MasterInstrument.Name,
+        AtrRatio = FeatureCalc.AtrRatio[0],
+        EfficiencyRatio = FeatureCalc.EfficiencyRatio[0],
+        VwapDistance = FeatureCalc.VwapDistanceAtr[0],
+        RelativeVolume = FeatureCalc.RelativeVolume[0],
+        SessionPhaseMinutes = FeatureCalc.MinutesSinceOpen[0],
+        // ... all other features ...
+        SessionPnl = GetSessionPnl() // Track locally
+    };
+    
+    // Request decision from Python
+    DecisionResponse decision = pythonBridge.RequestDecision(features);
+    
+    // Hard local safety check (belt-and-suspenders)
+    if (!LocalSafetyCheck(decision)) return;
+    
+    // Act on permission
+    switch (decision.Permission)
+    {
+        case "EXECUTE":
+        case "EXECUTE_REDUCED":
+            if (Position.MarketPosition == MarketPosition.Flat) {
+                ExecuteEntry(decision);
+            }
+            break;
+            
+        case "BLOCK":
+            // Close any position if shutdown reason
+            if (decision.RejectionReasons.Contains("SESSION_SHUTDOWN")) {
+                if (Position.MarketPosition != MarketPosition.Flat) {
+                    ExitPosition("RISK_ENGINE_SHUTDOWN");
+                }
+            }
+            break;
+    }
+    
+    // Log decision
+    LogDecision(features, decision);
+}
+
+private void ExecuteEntry(DecisionResponse decision)
+{
+    double stopDistance = decision.StopDistancePoints;
+    double targetDistance = decision.Target1DistancePoints;
+    int contracts = CalculateContracts(decision.FinalSizeMultiplier);
+    
+    // Sanity check stop distance
+    if (stopDistance <= 0 || stopDistance > 3 * FeatureCalc.Atr[0]) {
+        Log("REJECTED: Stop distance out of bounds", LogLevel.Warning);
+        return;
+    }
+    
+    if (decision.Direction == "LONG") {
+        EnterLong(contracts, "ADAPTIVE_LONG");
+        SetStopLoss("ADAPTIVE_LONG", CalculationMode.Ticks, 
+                    stopDistance * TicksPerPoint, false);
+        SetProfitTarget("ADAPTIVE_LONG", CalculationMode.Ticks,
+                        targetDistance * TicksPerPoint);
+    }
+    else if (decision.Direction == "SHORT") {
+        EnterShort(contracts, "ADAPTIVE_SHORT");
+        SetStopLoss("ADAPTIVE_SHORT", CalculationMode.Ticks,
+                    stopDistance * TicksPerPoint, false);
+        SetProfitTarget("ADAPTIVE_SHORT", CalculationMode.Ticks,
+                        targetDistance * TicksPerPoint);
+    }
+}
+M. Pseudocode: Daily Session Reset
+python
+# intelligence_server.py — Session management
+
+def session_open(instrument: str, session_date: str):
+    """Called when NT8 connects at session open"""
+    
+    # 1. Load event calendar for today
+    event_calendar.load_calendar(session_date)
+    
+    # 2. Reset risk engine state
+    risk_engine.session_reset()
+    
+    # 3. Load latest model weights
+    regime_classifier.load_model(get_latest_model_path("regime"))
+    for specialist in all_specialists:
+        specialist.load_model(get_latest_model_path(specialist.id))
+    
+    # 4. Reset policy selector state
+    policy_selector.session_reset()
+    
+    # 5. Initialize logger for new session
+    logger.start_session(instrument, session_date)
+    
+    # 6. Load prior session context (last day's regime, performance)
+    prior_context = load_prior_session_context(instrument, session_date)
+    regime_classifier.set_prior_context(prior_context)
+    
+    # 7. Log session open
+    logger.log_event("SESSION_OPEN", {
+        "instrument": instrument,
+        "date": session_date,
+        "events_today": event_calendar.get_all_today(),
+        "models_loaded": get_loaded_model_versions()
+    })
+    
+    print(f"Session opened: {instrument} {session_date}")
+
+def session_close(instrument: str, session_date: str):
+    """Called when NT8 disconnects at session close"""
+    
+    # 1. Get final session metrics
+    session_metrics = risk_engine.get_session_metrics()
+    
+    # 2. Log session close
+    logger.log_event("SESSION_CLOSE", {
+        "instrument": instrument,
+        "date": session_date,
+        "session_pnl": session_metrics["session_pnl"],
+        "trades": session_metrics["session_trades"],
+        "consecutive_losses_final": session_metrics["consecutive_losses"],
+        "final_risk_state": session_metrics["risk_state"]
+    })
+    
+    # 3. Write session summary file
+    logger.write_session_summary(instrument, session_date, session_metrics)
+    
+    # 4. Check if retraining criteria met
+    check_retraining_criteria(instrument, session_metrics)
+    
+    # 5. Archive today's log files
+    logger.archive_session(session_date)
+    
+    print(f"Session closed: {instrument} {session_date}")
+    print(f"  P&L: {session_metrics['session_pnl']:.2f}")
+    print(f"  Trades: {session_metrics['session_trades']}")
+N. Pre-Live Deployment Validation Checklist
+ARCHITECTURE VALIDATION
+□ TCP socket connects and disconnects cleanly
+□ Reconnect works correctly after Python restart
+□ NT8 enters safe mode correctly on disconnect
+□ All JSON schemas validate without errors
+□ Latency < 50ms on 100 consecutive test requests
+□ Length-prefixed protocol handles large and small messages
+
+RISK ENGINE VALIDATION
+□ Daily loss limit blocks all trades correctly at exact threshold
+□ Gain protection triggers and locks correctly
+□ Consecutive loss counter increments and resets correctly
+□ PAUSED state releases after exactly 30 minutes
+□ SHUTDOWN state cannot be exited without session reset
+□ All state transitions tested with unit tests
+□ Per-trade risk limit rejects oversized stops
+
+REGIME CLASSIFIER VALIDATION
+□ Model outputs valid probability distribution (sums to 1.0)
+□ Out-of-sample accuracy > 55% on test data
+□ Persistence filter prevents flipping in fewer than 3 bars
+□ Low-confidence flag fires correctly at threshold
+□ Model loads from disk at session open without errors
+
+SPECIALIST MODEL VALIDATION
+□ Each specialist correctly returns no-signal when forbidden by regime
+□ Quality score range is valid (0–1)
+□ Setup logic produces false positives at expected rate on paper data
+□ Stop distance computation produces values within expected ATR range
+□ Target computation produces values consistent with R:R requirement
+
+POLICY SELECTOR VALIDATION
+□ Decision table covers all regime states
+□ Anti-thrashing filter works correctly
+□ No specialist can fire when risk state is SHUTDOWN
+□ Policy correctly ignores specialist signals when event_imminent=true
+□ STANDDOWN returned during first/last 15 minutes of session
+
+EVENT CALENDAR VALIDATION
+□ Calendar loads correctly from JSON file
+□ Pre-blackout window is computed correctly
+□ Post-blackout window is computed correctly
+□ Instrument-specific events only affect correct instruments
+□ System operates normally on event-free days
+
+LOGGING VALIDATION
+□ Every request and response is logged to file
+□ Log files are valid JSON lines format
+□ Daily summary file generates correctly
+□ Log rotation works without data loss
+
+END-TO-END SIMULATION VALIDATION
+□ Run 30 days of paper trading without software errors
+□ Risk engine terminates sessions correctly each day
+□ No unintended position entries
+□ No position sizing errors vs requested contracts
+□ All fills logged and reconcile with NT8 account
+□ System recovers correctly from NT8 mid-session restart
+□ System recovers correctly from Python mid-session restart
+□ No memory leaks after 5 hours of continuous operation
+
+PERFORMANCE BASELINE VALIDATION
+□ Regime classifier produces reasonable regime distribution in paper trading
+□ Specialist models fire at expected frequency
+□ Win rate is not zero (system is generating trades)
+□ Risk engine states transition as expected, not stuck in NORMAL
+□ Session P&L is in expected range (positive or slightly negative — we are testing function, not performance)
+18. PRACTICALITY FILTER (Self-Challenge)
+Here is an honest evaluation of this design's weakest points:
+
+Too Complex (Simplify or Defer)
+13 regime classes is too many to label reliably. Start with 6: TREND_UP, TREND_DOWN, RANGE_BOUND, BREAKOUT_CONTINUATION, BREAKOUT_FAILURE, and NO_TRADE. Collapse the others into these categories for V1. Add finer granularity later when you have labeled data quality to support it.
+
+Quality scorers for specialist models are premature in V1. Rule-based setups with fixed quality thresholds are sufficient to start. The LightGBM quality scorer requires sufficient labeled setup instances — you may not have enough from the first few months. Replace quality scorer with a simpler scoring rubric (integer score based on how many conditions are met) for V1.
+
+Per-specialist rolling win rate tracking in the policy selector adds statefulness that is easy to get wrong. Defer the "suppress specialist after 3 losses in current regime" logic until V2. In V1, just use the simpler "pause after 3 consecutive losses" logic in the risk engine.
+
+The anti-thrashing filter is important but easy to implement incorrectly. In V1, replace it with a simpler rule: minimum 3 bars between policy changes.
+
+Most Likely to Overfit
+Regime classifier labels are subjective and hindsight-biased. The labeling process is the highest-risk part of the whole system. If you label a day as "TREND_UP" because it closed 50 points above open, but the first 60 minutes were chop, your classifier will learn to activate trend-following strategies during opening chop. Review every label manually for the first 60 days of training data.
+
+The specialist quality scorer will overfit if the training set is small. LightGBM needs 500+ positive and 500+ negative examples per specialist to produce reliable probability estimates. If you have fewer, use logistic regression with L2 regularization instead — it generalizes better on small samples.
+
+Fragile in Live Trading
+TCP socket communication is more fragile than file-based communication for non-critical latency cases. File-based polling is slower (1–5 second decision cycle) but is nearly indestructible. If the 5-minute decision cadence is acceptable for your strategy (it usually is for bar-based day trading), consider starting with file-based communication in V1 and switching to sockets in V2. This removes an entire failure mode from the first live deployment.
+
+Event calendar must be updated daily before the session. This is a manual operational step. If you forget to update it and a CPI print lands without the flag set, the system will trade through it. Automate the calendar update or add a redundant manual check.
+
+NinjaTrader 8 can behave unexpectedly during connection errors, data feed issues, and order routing problems. The local emergency stop in NT8 (section 11) is essential. Do not rely solely on Python to limit risk during platform instability.
+
+Unrealistic for NT8
+Full VWAP computation in NinjaTrader 8 is straightforward but requires session-anchored VWAP, not bar-anchored. Make sure the FeatureCalculator indicator uses session-anchored VWAP explicitly.
+
+Real-time volume delta (buy-side vs sell-side) requires Level 2 data and a CME subscription. Remove this from the feature list for any trader without that subscription. All features listed in the Regime Classifier section above are achievable with standard NT8 data.
+
+Parts to Simplify for V1
+Full Design	V1 Simplification
+13 regimes	6 regimes
+ML quality scorer per specialist	Integer rule scoring
+Anti-thrashing with full state	3-bar minimum policy hold
+Per-specialist rolling win rate	Session-level loss counter only
+File/socket hybrid	File-based polling only
+Auto retraining pipeline	Monthly manual retrain
+Multi-instrument	MNQ only
+Revised V1 Recommendation
+Build V1 with these exact components:
+
+NT8 feature exporter → CSV file output
+Python polling service reading the CSV (every 5-minute bar)
+6-class regime classifier (LightGBM)
+SPEC-1 rule-based with integer quality score (not ML)
+Simplified policy selector (6-row decision table)
+Full risk engine (do not simplify this)
+Event calendar (Tier 1 and 2 only)
+File-based output: Python writes decision JSON file, NT8 reads it
+This V1 is buildable by a single developer in 2–3 months. It is testable end-to-end. It is safe enough to paper trade immediately. It proves all the architectural concepts before adding complexity.
+
+Every additional specialist, every additional regime, every ML quality scorer, and the socket communication layer are V2 work — and only after V1 has proven itself in 30+ days of paper trading.
+
+19. PYTHON TECH STACK AND DETAILED TECHNICAL SPECS
+Recommended Python Tech Stack
+Runtime:        Python 3.11+
+ML Framework:   LightGBM 4.x (regime classifier, quality scorers)
+Data:           pandas 2.x, numpy 1.26+
+Serialization:  orjson (faster than standard json for hot paths)
+Logging:        structlog (structured JSON logging)
+Config:         pydantic v2 (typed config models)
+Testing:        pytest + pytest-cov
+Scheduling:     APScheduler (for daily retrain triggers)
+Data storage:   SQLite (session logs, performance tracking) or flat files
+Backtest:       vectorbt or custom pandas backtester
+Environment:    conda or venv
+Do NOT add:
+
+FastAPI/Flask (not needed; TCP socket is sufficient and lighter)
+Redis (adds complexity without benefit at this scale)
+Docker (adds operational complexity for a single-machine system)
+Kafka/RabbitMQ (drastically over-engineered for this use case)
+PyTorch/TensorFlow (LightGBM is sufficient; neural nets are overkill here)
+Class/Module Definitions
+python
+# regime_classifier.py
+class RegimeClassifier:
+    REGIME_LABELS = [
+        "TREND_UP", "TREND_DOWN", "RANGE_BOUND",
+        "BREAKOUT_CONTINUATION", "BREAKOUT_FAILURE", "NO_TRADE"
+    ]
+    
+    def __init__(self, model_path: str): ...
+    def load_model(self, model_path: str) -> None: ...
+    def classify(self, features: dict) -> RegimeOutput: ...
+    def _apply_persistence_filter(self, raw_probs: np.ndarray) -> np.ndarray: ...
+    def _compute_confidence(self, smoothed_probs: np.ndarray) -> float: ...
+
+@dataclass
+class RegimeOutput:
+    regime_probs: dict[str, float]
+    primary_regime: str
+    primary_confidence: float
+    secondary_regime: str
+    secondary_confidence: float
+    low_confidence_flag: bool
+    regime_stable: bool
+    bars_in_current_regime: int
+
+# specialist base class
+class SpecialistModel(ABC):
+    specialist_id: str
+    allowed_regimes: list[str]
+    forbidden_regimes: list[str]
+    
+    @abstractmethod
+    def evaluate(self, features: dict, 
+                 regime: RegimeOutput) -> SpecialistOutput: ...
+    
+    def is_regime_allowed(self, regime: RegimeOutput) -> bool: ...
+
+@dataclass
+class SpecialistOutput:
+    specialist_id: str
+    setup_detected: bool
+    quality_score: float  # 0.0 to 1.0
+    direction: str  # "LONG", "SHORT", or "NONE"
+    stop_distance_points: float
+    target_1_distance_points: float
+    no_trade_reason: Optional[str]
+
+# policy_selector.py
+class PolicySelector:
+    def __init__(self): ...
+    def session_reset(self) -> None: ...
+    def select_policy(self,
+                      regime: RegimeOutput,
+                      specialists: dict[str, SpecialistOutput],
+                      event_ctx: EventContext,
+                      session_phase: str,
+                      risk_state: str) -> PolicyOutput: ...
+    def _check_anti_thrash(self, candidate_policy: str) -> bool: ...
+
+@dataclass
+class PolicyOutput:
+    policy_state: str  # "ACTIVE", "REDUCED", "STANDDOWN", "DEFENSIVE"
+    active_specialist: Optional[str]
+    allowed_direction: Optional[str]
+    size_multiplier: float
+    no_trade_flag: bool
+    standdown_reason: Optional[str]
+
+# risk_engine.py
+class RiskEngine:
+    def __init__(self, account_config: AccountConfig): ...
+    def session_reset(self) -> None: ...
+    def update_pnl(self, trade_pnl: float) -> None: ...
+    def check_permission(self,
+                         policy: PolicyOutput,
+                         instrument: str,
+                         atr_ratio: float) -> RiskOutput: ...
+    def get_current_state(self) -> str: ...
+    def get_session_metrics(self) -> dict: ...
+
+@dataclass 
+class AccountConfig:
+    account_type: str  # "personal" or "prop"
+    max_risk_per_trade: float
+    daily_loss_limit: float
+    max_trades_per_day: int
+    max_consecutive_losses: int
+    gain_protection_trigger: float
+    defensive_threshold_pct: float
+    reduced_threshold_pct: float
+
+@dataclass
+class RiskOutput:
+    trade_permitted: bool
+    risk_state: str
+    size_multiplier: float
+    max_risk_this_trade: float
+    rejection_reasons: list[str]
+    daily_pnl: float
+    consecutive_losses: int
+    shutdown_triggered: bool
+NT8 Request JSON Schema
+json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "NT8FeatureRequest",
+  "type": "object",
+  "required": ["message_type", "request_id", "timestamp", "instrument", "features", "session_context"],
+  "properties": {
+    "message_type": {"type": "string", "enum": ["FEATURE_REQUEST", "CONNECT_HANDSHAKE", "SESSION_CLOSE"]},
+    "request_id": {"type": "string", "pattern": "^req_[0-9]{8}_[0-9]{6}_[A-Z]+$"},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "instrument": {"type": "string", "enum": ["MNQ", "NQ", "MES", "ES", "MGC", "GC", "MCL", "CL"]},
+    "features": {
+      "type": "object",
+      "required": ["atr_ratio_14", "efficiency_ratio_20", "vwap_distance_atr", 
+                   "relative_volume_10", "session_phase_minutes", "or_size_ratio",
+                   "gap_ratio", "chop_rate_20", "ema_slope_10", "vwap_crossings_30",
+                   "atr_current", "close_price", "vwap_value", "ema_20_value"],
+      "properties": {
+        "atr_ratio_14": {"type": "number", "minimum": 0},
+        "atr_slope": {"type": "number"},
+        "efficiency_ratio_20": {"type": "number", "minimum": -1, "maximum": 1},
+        "vwap_distance_atr": {"type": "number"},
+        "vwap_slope_10": {"type": "number"},
+        "or_size_ratio": {"type": "number", "minimum": 0},
+        "relative_volume_10": {"type": "number", "minimum": 0},
+        "chop_rate_20": {"type": "number", "minimum": 0, "maximum": 1},
+        "gap_ratio": {"type": "number"},
+        "session_phase_minutes": {"type": "integer", "minimum": 0, "maximum": 500},
+        "ema_slope_10": {"type": "number"},
+        "vwap_crossings_30": {"type": "integer", "minimum": 0},
+        "max_run_length_20": {"type": "integer", "minimum": 0},
+        "atr_current": {"type": "number", "minimum": 0},
+        "close_price": {"type": "number", "minimum": 0},
+        "vwap_value": {"type": "number", "minimum": 0},
+        "ema_20_value": {"type": "number", "minimum": 0},
+        "or_high": {"type": "number"},
+        "or_low": {"type": "number"},
+        "prior_day_high": {"type": "number"},
+        "prior_day_low": {"type": "number"},
+        "bar_close_quality": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "session_context": {
+      "type": "object",
+      "properties": {
+        "session_pnl": {"type": "number"},
+        "session_trades": {"type": "integer", "minimum": 0},
+        "consecutive_losses": {"type": "integer", "minimum": 0},
+        "has_open_position": {"type": "boolean"},
+        "open_position_direction": {"type": "string", "enum": ["LONG", "SHORT", "FLAT"]}
+      }
+    }
+  }
+}
+Python Response JSON Schema
+json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PythonDecisionResponse",
+  "type": "object",
+  "required": ["request_id", "timestamp", "permission"],
+  "properties": {
+    "request_id": {"type": "string"},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "permission": {"type": "string", "enum": ["EXECUTE", "EXECUTE_REDUCED", "BLOCK", "MANAGE_ONLY"]},
+    "active_specialist": {"type": ["string", "null"]},
+    "direction": {"type": ["string", "null"], "enum": ["LONG", "SHORT", null]},
+    "entry_type": {"type": ["string", "null"], "enum": ["MARKET_ON_NEXT_BAR_OPEN", null]},
+    "stop_distance_points": {"type": ["number", "null"], "minimum": 0},
+    "target_1_distance_points": {"type": ["number", "null"], "minimum": 0},
+    "final_size_multiplier": {"type": "number", "minimum": 0, "maximum": 1},
+    "final_contracts": {"type": "integer", "minimum": 0},
+    "rejection_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "INVALID_FEATURES", "EVENT_BLACKOUT", "SESSION_PHASE_BLOCK",
+          "LOW_REGIME_CONFIDENCE", "NO_SPECIALIST_QUALIFIED", 
+          "RISK_STATE_SHUTDOWN", "RISK_STATE_PAUSED", "MAX_TRADES_REACHED",
+          "DAILY_LOSS_LIMIT", "PYTHON_DISCONNECTED_SAFE_MODE",
+          "ATR_EXTREME_VOLATILITY", "POLICY_STANDDOWN"
+        ]
+      }
+    },
+    "regime": {"type": ["string", "null"]},
+    "regime_confidence": {"type": ["number", "null"]},
+    "risk_state": {"type": "string"},
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "quality_score": {"type": ["number", "null"]},
+        "daily_pnl": {"type": "number"},
+        "consecutive_losses": {"type": "integer"},
+        "latency_ms": {"type": "number"}
+      }
+    }
+  }
+}
+NT8 Pre-Trade Permission Request Pseudocode
+csharp
+// How NT8 requests permission before placing every trade
+
+private bool RequestTradePermission(string direction, out DecisionResponse response)
+{
+    response = null;
+    
+    // Step 1: Build current feature vector
+    FeatureVector features = BuildFeatureVector();
+    
+    // Step 2: Validate feature vector locally (sanity check)
+    if (!ValidateFeatures(features)) {
+        Log("Feature validation failed — blocking trade", LogLevel.Warning);
+        return false;
+    }
+    
+    // Step 3: Send request to Python
+    DecisionResponse pythonResponse = pythonBridge.RequestDecision(features);
+    
+    // Step 4: Null/error check
+    if (pythonResponse == null) {
+        Log("Null response from Python — blocking trade", LogLevel.Warning);
+        return false;
+    }
+    
+    // Step 5: Check permission field
+    if (pythonResponse.Permission != "EXECUTE" && 
+        pythonResponse.Permission != "EXECUTE_REDUCED") {
+        Log($"Python blocked trade: {string.Join(", ", pythonResponse.RejectionReasons)}",
+            LogLevel.Information);
+        return false;
+    }
+    
+    // Step 6: Direction alignment check
+    if (pythonResponse.Direction != direction) {
+        Log($"Direction mismatch: requested {direction}, " +
+            $"Python approved {pythonResponse.Direction} — blocking", 
+            LogLevel.Warning);
+        return false;
+    }
+    
+    // Step 7: Local hard limit check (belt-and-suspenders)
+    double stopDistanceDollars = pythonResponse.StopDistancePoints 
+                                 * TickSize * BigPointValue 
+                                 / TickSize;
+    if (stopDistanceDollars > LocalMaxRiskPerTrade) {
+        Log($"Stop distance ${stopDistanceDollars:F2} exceeds local limit " +
+            $"${LocalMaxRiskPerTrade:F2} — blocking", LogLevel.Warning);
+        return false;
+    }
+    
+    // Step 8: Already in position?
+    if (Position.MarketPosition != MarketPosition.Flat) {
+        Log("Already in position — ignoring new entry signal", LogLevel.Information);
+        return false;
+    }
+    
+    // Step 9: All checks passed
+    response = pythonResponse;
+    Log($"Trade APPROVED: {direction} via {pythonResponse.ActiveSpecialist}, " +
+        $"size×{pythonResponse.FinalSizeMultiplier:F2}", LogLevel.Information);
+    return true;
+}
+This completes the full architecture design. The system described here is practical, modular, testable, and realistic for a capital-constrained futures day trader operating on NinjaTrader 8 with Python intelligence. Build it in the order specified. Prove each layer before adding the next. Never trade size that would hurt you if the model is simply wrong for an entire week — because at some point, it will be.
+
+The most important component in this system is not the regime classifier, not the specialist models, and not the policy selector. It is the hard risk engine. Build that first, test it exhaustively, and never let any other component override it.

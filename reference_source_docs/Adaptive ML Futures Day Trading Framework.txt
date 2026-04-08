@@ -1,0 +1,3133 @@
+
+You are an elite quantitative researcher, machine learning architect, institutional futures strategist, and NinjaTrader 8 systems designer.
+
+Your task is to design a complete, production-grade machine learning trading framework for futures day trading that can ADAPT its behavior as market conditions change.
+
+I do NOT want a basic static NT8 strategy with hardcoded rules like:
+- buy when indicator A crosses indicator B
+- sell when price hits target C
+
+I want a dynamic, learning-based framework that can:
+- recognize changing market regimes
+- incorporate evolving market structure
+- respond differently in trending vs ranging vs volatile vs news-driven conditions
+- use current and recent market behavior to adjust entries, exits, position sizing, trade frequency, and strategy selection
+- learn from data without becoming dangerously overfit
+- maintain strict risk management so it never blows up a small account or prop account
+
+Important:
+This is for FUTURES DAY TRADING only, not swing trading.
+All positions must be closed intraday.
+The final result should be something that can eventually be implemented in NinjaTrader 8, but you are free to propose external model training pipelines if NT8 alone is too limited.
+
+My account and risk context:
+- I may trade small personal cash accounts under $2,000
+- I may also trade prop firm accounts with roughly a $2,000 drawdown limit
+- I am willing to take some risk, but cannot allow one trade, one day, or one regime shift to destroy the account
+- Capital preservation is mandatory
+- The system should favor robustness and survivability over theoretical maximum return
+
+Markets of interest:
+- NQ / MNQ
+- ES / MES
+- GC / MGC
+- CL / MCL
+
+I want the model to act as intelligently and institutionally as possible.
+That does NOT mean fantasy prediction.
+It means building a system that intelligently interprets:
+- volatility
+- liquidity
+- market structure
+- trend strength
+- chop/range conditions
+- opening drive behavior
+- mean reversion conditions
+- time-of-day effects
+- macro event risk
+- news cycle impact
+- intraday momentum shifts
+- market context from recent sessions
+
+The goal is to create an adaptive machine learning framework that can change trading behavior based on changing market conditions.
+
+I want you to design the full system and explain it in detail.
+
+Please structure your answer using the exact sections below.
+
+==================================================
+1. SYSTEM OBJECTIVE
+==================================================
+
+Define the true objective of this machine learning trading system.
+
+Answer:
+- What exactly is the model trying to optimize?
+- Should it optimize raw PnL, expectancy, Sharpe-like stability, drawdown-adjusted return, or something else?
+- What is the correct objective for a small-account / prop-firm-safe adaptive day trading system?
+- What should the priority order be among:
+  1) avoiding catastrophic losses
+  2) staying aligned with market regime
+  3) maximizing expectancy
+  4) scaling aggressiveness only when conditions are favorable
+
+Explain what success should look like in a real trading context.
+
+==================================================
+2. HIGH-LEVEL SYSTEM ARCHITECTURE
+==================================================
+
+Design the full architecture of the adaptive trading system.
+
+I want a modular architecture with components such as:
+- data ingestion
+- feature engineering
+- market regime classification
+- signal generation
+- strategy selection / policy selection
+- risk engine
+- execution layer
+- monitoring and retraining layer
+
+Explain:
+- what each module does
+- how they communicate
+- what should happen in real time vs offline
+- what should happen inside NT8 vs outside NT8
+- whether the best architecture is:
+  - a single all-in-one model
+  - an ensemble of specialized models
+  - a meta-model that selects among multiple sub-strategies
+  - a regime classifier plus separate execution models
+
+Be opinionated and explain why.
+
+==================================================
+3. BEST MACHINE LEARNING APPROACH
+==================================================
+
+Recommend the best ML paradigm or combination of paradigms for this use case.
+
+Evaluate and compare:
+- supervised learning
+- reinforcement learning
+- online learning
+- regime classification models
+- ensemble learning
+- meta-labeling
+- probabilistic forecasting
+- anomaly detection
+- contextual bandits
+- hidden Markov models
+- gradient boosting
+- random forests
+- XGBoost / LightGBM / CatBoost
+- temporal CNN / LSTM / transformer-based time series models
+- Bayesian methods
+- hybrid rule-based + ML frameworks
+
+For each approach, explain:
+- what role it could play
+- its strengths
+- its weaknesses
+- whether it is realistic for intraday futures trading
+- whether it is realistic for a retail trader / prop trader implementation
+
+Then choose the best architecture for my case and explain why.
+
+==================================================
+4. MARKET REGIME DETECTION
+==================================================
+
+This is one of the most important sections.
+
+Design a regime detection engine that identifies market conditions in real time.
+
+It should classify conditions such as:
+- trend day
+- range day
+- breakout day
+- mean reversion day
+- high-volatility day
+- low-volatility compression day
+- news-distorted day
+- risk-off / panic behavior
+- opening drive continuation
+- opening drive failure
+- midday chop
+- late-day expansion
+
+Define:
+- what data the regime engine uses
+- what features it should consider
+- how often it should update
+- how the model should determine confidence
+- how the strategy should behave differently under each regime
+
+Include objective inputs such as:
+- ATR behavior
+- realized volatility
+- opening range behavior
+- VWAP relationship
+- overnight range relation to RTH
+- prior day high/low interactions
+- breadth if relevant
+- volume expansion / contraction
+- relative volume
+- delta / order flow if available
+- news/event flags
+- intraday trend persistence metrics
+- rotation factor / chop factor
+
+Make this extremely specific.
+
+==================================================
+5. FEATURE ENGINEERING
+==================================================
+
+List the most important features the adaptive model should use.
+
+Break them into categories such as:
+- price action features
+- volatility features
+- structure features
+- liquidity features
+- volume features
+- time-of-day features
+- session context features
+- higher timeframe context features
+- event/news features
+- behavioral / regime features
+
+For each feature:
+- define it precisely
+- explain why it matters
+- explain whether it should be raw, normalized, rolling, z-scored, or transformed
+- explain how far back it should look
+- explain whether it should be used for regime detection, signal generation, risk adjustment, or all three
+
+Examples of areas to consider:
+- distance from VWAP
+- distance from prior day high/low
+- overnight inventory position
+- intraday range expansion vs normal
+- opening range extension
+- candle spread relative to recent average
+- wick/body ratio
+- return autocorrelation
+- volume spike intensity
+- volatility compression and release
+- local trend slope
+- failed breakout frequency
+- fair value gap / imbalance proxies
+- trend efficiency ratio
+- excursion statistics
+- time since session open
+- days since major macro event
+- current day economic calendar status
+
+Also explain which features are dangerous because they are likely to overfit.
+
+==================================================
+6. NEWS, EVENTS, AND DAILY CONTEXT
+==================================================
+
+I specifically want the system to adapt to daily events, macro events, and changing market context.
+
+Design a framework for incorporating:
+- scheduled economic releases
+- FOMC
+- CPI
+- NFP
+- PPI
+- jobless claims
+- crude oil inventories for CL
+- Fed speakers
+- major geopolitical shocks
+- earnings spillover if relevant
+- overnight gap context
+- prior session behavior
+- recent multi-day trend conditions
+
+Answer:
+- how should news be represented in the model?
+- should it be a direct NLP feed, a categorical event flag, a volatility expectation flag, or something else?
+- what is realistic vs unrealistic for implementation?
+- how should the system behave before, during, and after major economic events?
+- should the model reduce size, widen thresholds, stop trading, or switch to a different playbook?
+
+I want a practical design, not science fiction.
+
+==================================================
+7. SIGNAL GENERATION FRAMEWORK
+==================================================
+
+Explain how actual trade signals should be generated.
+
+I do NOT want the model to simply predict “up” or “down.”
+I want a more intelligent framework.
+
+Consider and compare:
+- predicting next-bar direction
+- predicting expected excursion
+- predicting probability of trend continuation
+- predicting probability of mean reversion
+- predicting whether a breakout will hold
+- predicting whether to trade at all
+- predicting which sub-strategy is active
+- predicting conditional expected value of a setup
+
+Then recommend the best signal design.
+
+For example, the model might output:
+- regime classification
+- setup quality score
+- long expectancy score
+- short expectancy score
+- no-trade score
+- confidence score
+- recommended risk multiplier
+
+Explain the ideal signal stack in detail.
+
+==================================================
+8. STRATEGY SELECTION / POLICY ENGINE
+==================================================
+
+I do not want a single behavior in all environments.
+
+Design a policy engine that changes behavior based on detected conditions.
+
+For example, the engine may choose between:
+- momentum continuation model
+- pullback trend model
+- breakout confirmation model
+- failed breakout reversal model
+- mean reversion to VWAP model
+- no-trade mode
+
+For each policy:
+- define when it should activate
+- define when it should deactivate
+- define how confidence should be measured
+- define how to prevent rapid flip-flopping between policies
+- define how the system should behave when regime confidence is low
+
+Explain whether the best design is:
+- hard switching
+- weighted blending
+- hierarchical filtering
+- a meta-model over specialist models
+
+==================================================
+9. RISK MANAGEMENT ENGINE
+==================================================
+
+This section is critical.
+
+Design a machine-learning-aware risk engine for:
+- small cash accounts under $2,000
+- prop accounts with roughly $2,000 drawdown limit
+
+The risk engine must define:
+- max risk per trade
+- max daily loss
+- max trades per day
+- max consecutive losses
+- max exposure by regime
+- max size by instrument
+- how risk changes when model confidence rises or falls
+- how risk changes after drawdown
+- how risk changes after strong performance
+- when to lock the system down for the day
+- when to shift into “defensive mode”
+
+I want separate recommendations for:
+- MNQ vs NQ
+- MES vs ES
+- MGC vs GC
+- MCL vs CL
+
+Be explicit about where larger contracts should simply be forbidden.
+
+Also explain:
+- how to avoid “model confidence” becoming an excuse for oversizing
+- how to cap aggressiveness
+- how to handle slippage and volatility spikes
+- how to prevent correlated losses when conditions suddenly change
+
+==================================================
+10. TRAINING DATA DESIGN
+==================================================
+
+Design the ideal training dataset for this adaptive model.
+
+Explain:
+- what raw market data is needed
+- what timeframe granularity is needed
+- whether tick, second, minute, or multi-timeframe data is best
+- how much history is needed
+- how to segment by regime
+- how to label trades or opportunities
+- how to avoid survivorship bias and look-ahead bias
+- how to represent “no trade” periods
+- how to include economic calendar data
+- how to include recent context from prior sessions
+- whether training should be per instrument or cross-instrument
+
+I also want you to address:
+- class imbalance
+- rare event handling
+- non-stationarity
+- concept drift
+- market structure evolution over time
+
+==================================================
+11. MODEL TRAINING AND UPDATING
+==================================================
+
+Explain how the system should learn and adapt over time.
+
+I do NOT want reckless self-modifying behavior in live trading.
+
+Explain the best process for:
+- initial training
+- walk-forward validation
+- rolling retraining
+- online adaptation
+- weekly or monthly recalibration
+- feature drift monitoring
+- model decay detection
+- disabling degraded models
+
+Answer:
+- what should adapt in real time?
+- what should only adapt offline?
+- how frequently should retraining occur?
+- how should I detect when the model is no longer aligned with the market?
+- how can I adapt without overfitting to the last few days?
+
+Be extremely practical.
+
+==================================================
+12. BACKTESTING AND VALIDATION FRAMEWORK
+==================================================
+
+Design a realistic validation process.
+
+Include:
+- walk-forward analysis
+- out-of-sample validation
+- forward testing
+- paper trading
+- micro-contract live testing
+- regime-by-regime performance evaluation
+- news-day vs normal-day performance comparison
+- slippage-adjusted testing
+- Monte Carlo if appropriate
+
+List the performance metrics that matter most, such as:
+- expectancy
+- profit factor
+- max drawdown
+- average adverse excursion
+- average favorable excursion
+- regime-specific win rate
+- stability across time
+- return-to-drawdown ratio
+- percentage of PnL concentrated in a few days
+- performance degradation after costs
+
+Explain how to decide whether the model is truly robust.
+
+==================================================
+13. FAILURE MODES AND SAFETY CONTROLS
+==================================================
+
+List the main ways this adaptive system could fail.
+
+Examples:
+- overfitting
+- reacting too quickly to noise
+- reacting too slowly to real regime change
+- news shock gaps
+- data feed issues
+- execution latency
+- unstable feature importance
+- false confidence during unusual conditions
+- policy switching chaos
+- small sample illusion
+- correlated error across instruments
+
+For each failure mode:
+- explain the cause
+- explain how dangerous it is
+- explain how to mitigate it
+- define what kill switch or safety rule should exist
+
+I want robust institutional-style controls, not just optimism.
+
+==================================================
+14. NINJATRADER 8 IMPLEMENTATION DESIGN
+==================================================
+
+Design how this should be implemented with NinjaTrader 8.
+
+Answer:
+- what parts should live inside NT8?
+- what parts should live in Python or an external ML service?
+- how should NT8 communicate with the model?
+- should NT8 only execute trades while an external service handles intelligence?
+- what architecture is realistic for latency, stability, and maintainability?
+
+Discuss:
+- feature generation inside NT8 vs outside
+- loading predictions into NT8
+- model inference timing
+- failover behavior if the external model stops working
+- logging and audit trail design
+- whether real-time adaptation is feasible in NT8 alone
+
+Be honest about platform limitations.
+
+==================================================
+15. STEP-BY-STEP BUILD PLAN
+==================================================
+
+Give me a phased development roadmap.
+
+For example:
+Phase 1: define market regimes and build a regime classifier
+Phase 2: build simple specialist strategies per regime
+Phase 3: build a policy selector
+Phase 4: add confidence-weighted risk control
+Phase 5: add event-awareness
+Phase 6: forward test
+Phase 7: limited live deployment on micros
+Phase 8: evaluate prop-firm-safe deployment
+
+For each phase:
+- define exact deliverables
+- define success criteria
+- define what should be tested before moving on
+
+==================================================
+16. FINAL RECOMMENDED DESIGN
+==================================================
+
+After evaluating everything above, give me your final recommended architecture for the best practical adaptive futures day trading system for my situation.
+
+This section must include:
+- the exact recommended model architecture
+- the exact recommended data inputs
+- the exact recommended regime engine
+- the exact signal design
+- the exact policy engine
+- the exact risk engine
+- the exact retraining/update cadence
+- the exact implementation approach with NT8
+- what instruments I should start with
+- what instruments I should avoid initially
+- what contract sizes I should use initially
+- the safest path from research to live trading
+
+==================================================
+17. CODE-READY OUTPUT FORMAT
+==================================================
+
+At the end, provide all of the following:
+
+A. A concise system blueprint
+B. A component diagram in words
+C. A list of all required data fields
+D. A list of all engineered features
+E. A list of regime classes
+F. A list of model outputs
+G. A policy decision table
+H. A risk-control table
+I. A retraining/update schedule
+J. Pseudocode for the full system
+K. A recommended file/project structure for implementation
+L. A checklist for validating the model before live deployment
+
+==================================================
+18. IMPORTANT DESIGN CONSTRAINTS
+==================================================
+
+These constraints must be respected throughout your answer:
+
+Do not build a fantasy black-box that assumes perfect prediction
+Do not assume unlimited data or institutional infrastructure
+Do not recommend reckless reinforcement learning unless you can justify it practically
+Do not assume that “more complexity” means better performance
+Do not rely on hindsight-only features
+Do not allow one trade to create account-ending risk
+Do not allow the system to blindly trade through major event risk
+Do not use adaptive sizing in a way that can destabilize the account
+Do not assume the model should trade every day
+Prioritize regime alignment and capital preservation over trade frequency
+Prefer practical, testable, modular design over theoretical elegance
+Final instruction:
+Think like a hedge-fund quant, a prop-firm risk manager, and a professional futures trader at the same time.
+Your goal is to design the best practical adaptive ML trading system for a serious but capital-constrained futures day trader.
+
+Before giving the final recommendation, challenge your own design:
+- Where is it too fragile?
+- Where is it too complex?
+- Where is it likely to overfit?
+- Where is it unrealistic for a trader using NinjaTrader 8?
+Then revise it to make it more practical and robust.
+
+Also include a “practicality filter” section where you separate:
+1) what is ideal in theory,
+2) what is realistic for a retail/prop trader,
+3) what should be built first,
+4) what should be postponed until the simpler system proves itself.
+
+Then provide:
+- a minimum viable version
+- a version 2
+- a version 3
+so I can build this incrementally instead of trying to build everything at once.
+
+Do not stop at architecture. I want specific recommendations for:
+- target labels
+- model outputs
+- confidence scoring
+- retraining schedule
+- regime thresholds
+- feature groups
+- policy switching logic
+- risk throttling logic
+- walk-forward testing design
+- model shutdown criteria
+
+Show less
+Apr 4
+ADAPTIVE ML FUTURES DAY TRADING FRAMEWORK
+A Complete Production-Grade System Design for Capital-Constrained Prop and Personal Account Trading
+SECTION 1: SYSTEM OBJECTIVE
+What Exactly Is the Model Trying to Optimize?
+The honest answer is that this system should not try to maximize raw PnL. That framing leads directly to overfitting, oversizing, and eventual account destruction. Instead, the system should optimize a composite objective that I will call Regime-Adjusted Survivable Expectancy (RASE).
+
+RASE is defined as:
+
+RASE = E[Trade PnL | Regime Confidence > threshold] 
+       × Regime Alignment Score 
+       × (1 - P(Daily Limit Breach))
+       / Max Intraday Drawdown
+In plain language: the system should find positive expected value setups that occur during high-confidence regime conditions, while keeping the probability of hitting a daily loss limit near zero and keeping the intraday drawdown small relative to any gains generated.
+
+Priority Order
+For a small-account and prop-firm-safe system, the priority order must be ironclad and non-negotiable:
+
+Priority 1: Avoid catastrophic loss. A single trade, single day, or single regime shift cannot destroy the account. This is a hard constraint, not a soft preference. No model confidence score, no matter how high, overrides hard dollar-based risk limits.
+
+Priority 2: Stay aligned with market regime. The biggest source of trading losses at the retail and prop level is not bad entries. It is trading the wrong strategy in the wrong environment. A trend-following approach during a chop day, or a mean-reversion approach during a news-driven breakout, will systematically lose money regardless of how well-calibrated the signals are. The system must first identify what kind of day it is before deciding whether or how to trade.
+
+Priority 3: Maximize expectancy per trade. Once regime alignment is confirmed and risk is bounded, the system should choose the highest-quality setup available. This means favoring fewer, higher-quality trades over high-frequency mediocre signals.
+
+Priority 4: Scale aggressiveness only when conditions are explicitly favorable. Position sizing should remain at minimum safe levels by default and increase only when regime confidence is high, recent performance is positive, and the specific setup quality exceeds a threshold. This is not about maximizing size. It is about not leaving money on the table when the system is clearly working.
+
+What Success Looks Like in a Real Trading Context
+Success is not a 90% win rate. Success is not a massive Sharpe ratio in backtest. Success looks like the following:
+
+The system trades 8 to 15 times per week across all active instruments, not 50 times per day
+Average winners are larger than average losers, with a profit factor between 1.4 and 1.9
+The system stops trading or reduces size automatically on unfavorable days, resulting in many flat or nearly flat days
+Monthly maximum drawdown stays under 40% of the daily loss limit multiplied by 22 trading days
+The system survives multiple regime transitions, news events, and volatility spikes without intervention
+Over a 6-month forward test period, performance degrades slowly and predictably rather than catastrophically
+The prop firm account is never at risk of a drawdown breach from a single session
+The correct objective for a $2,000 drawdown limit account is to generate approximately $300 to $600 per month in net expectancy while never risking more than $200 to $250 in a single session and never allowing a single trade to exceed $80 to $100 in maximum risk. That sounds modest. It is survivable. A system generating 15% to 30% monthly return on a prop account, while maintaining drawdown discipline, is exceptional by any institutional standard.
+
+SECTION 2: HIGH-LEVEL SYSTEM ARCHITECTURE
+Recommended Architecture: Hierarchical Regime-Gated Meta-Model with Specialist Execution Policies
+After evaluating the alternatives, I recommend against a single all-in-one model and against a pure ensemble of equal-weight models. The correct architecture is a hierarchical system where a regime classifier acts as a gatekeeper that routes market conditions to specialized execution models, all governed by a separate risk engine that operates independently of the signal generation layer.
+
+The reason: financial time series are non-stationary. A single model trained across all regimes will underperform in every regime because it is averaging across fundamentally different data-generating processes. Separate specialist models trained on regime-specific data will outperform the generalist, but only if the regime classifier is accurate and robust.
+
+Module Definitions
+Module 1: Data Ingestion Layer
+What it does: Collects, cleans, and normalizes all raw data inputs in real time. Maintains rolling windows of price bars, volume data, and session metadata.
+
+Lives in: Primarily inside NT8 for price/volume data. An external Python service handles economic calendar ingestion, overnight session data, and session-level context compilation.
+
+Real-time vs offline: Real-time for market data. Daily pre-session for calendar and context data. The pre-session context package is compiled before 9:00 AM Eastern and loaded into the system.
+
+Outputs to: Feature Engineering Layer
+
+Module 2: Feature Engineering Layer
+What it does: Transforms raw data into the numerical features that feed the regime classifier and signal models. Computes rolling statistics, volatility measures, structure features, and session-context features.
+
+Lives in: Split. Time-sensitive price features are computed inside NT8 using indicators. Computationally expensive features such as rolling regression slopes, ATR z-scores, and session comparison features are pre-computed in Python and pushed to NT8 via a shared state file or named pipe.
+
+Real-time vs offline: Most features update bar-by-bar in real time. Some session-level features are computed once at session open and updated at defined intervals such as 30 minutes and 60 minutes into the session.
+
+Outputs to: Regime Classification Engine, Signal Generation Layer
+
+Module 3: Market Regime Classification Engine
+What it does: The most important module. Reads feature inputs and classifies the current market into one of a defined set of regime states. Outputs a regime label, a confidence score, and a secondary flag for news-event risk level.
+
+Lives in: Python external service. The regime model is a trained gradient boosting classifier (XGBoost). NT8 reads the regime output from a shared state file that updates every 5 minutes or at each session milestone.
+
+Real-time vs offline: Regime updates every 5 minutes during the session. Regime state is sticky by design: it requires sustained evidence to change, not a single bar's worth of data.
+
+Outputs to: Policy Engine, Risk Engine
+
+Module 4: Signal Generation Layer
+What it does: Given the active regime, generates entry signals with associated quality scores, directional bias scores, and expected excursion estimates. This is not a binary buy/sell signal. It is a scored output that the policy engine interprets.
+
+Lives in: Python for model inference. NT8 reads the output and executes conditionally.
+
+Real-time vs offline: Signal scoring updates at bar close on the primary timeframe (typically 5-minute bars) and is re-evaluated before each potential entry.
+
+Outputs to: Policy Engine
+
+Module 5: Policy / Strategy Selection Engine
+What it does: Given the regime label, the signal scores, and the confidence levels, selects which behavioral policy is active: momentum continuation, pullback entry, breakout confirmation, mean reversion, or no-trade. Also determines whether the system should be aggressive, conservative, or passive.
+
+Lives in: Can live inside NT8 as a decision table once trained. The policy engine is essentially a lookup table plus a simple threshold-based selector. It does not need to be a neural network. Simplicity here is a feature, not a bug.
+
+Real-time vs offline: Real-time, per-bar evaluation.
+
+Outputs to: Execution Layer, Risk Engine
+
+Module 6: Risk Engine
+What it does: Operates completely independently of the signal layer. It does not care what the model thinks. It enforces hard dollar limits on position size, daily loss, maximum trades, and consecutive loss sequences. It also modulates allowed position size based on regime confidence and recent session performance.
+
+Lives in: NT8. The risk engine must be inside the execution platform so it cannot be bypassed by a misconfigured external service.
+
+Real-time vs offline: Real-time, per-trade evaluation. Also runs a daily session-open initialization that loads the current day's risk budget.
+
+Outputs to: Execution Layer (approval/rejection/size modification)
+
+Module 7: Execution Layer
+What it does: Receives approved trade instructions from the policy engine, confirmed by the risk engine, and submits orders to the broker via NT8's order management system. Manages stops, targets, and intraday position tracking. Ensures flat by end of session.
+
+Lives in: Entirely inside NT8.
+
+Real-time vs offline: Real-time, always.
+
+Module 8: Monitoring and Retraining Layer
+What it does: Logs all trades, features at time of signal, regime classifications, signal scores, and outcomes. Monitors feature drift, model performance degradation, and regime distribution shift. Triggers retraining when degradation criteria are met. Never retrain automatically in live trading.
+
+Lives in: Python, entirely offline except for the logging component which writes to disk in real time.
+
+Real-time vs offline: Logging is real-time. Model evaluation, drift detection, and retraining decisions are offline, weekly.
+
+Communication Architecture
+External Python Service (Model Server)
+    ↓ writes to shared state file (JSON) every 5 min
+NinjaTrader 8 (Strategy Core)
+    ↓ reads state file at bar close
+    ↓ applies risk engine (internal NT8 logic)
+    ↓ submits or rejects orders via NT8 order management
+    ↓ writes trade log to disk
+External Python (Monitoring)
+    ↑ reads trade log nightly
+    ↑ evaluates model performance
+    ↑ flags retraining if needed
+    ↑ retraining happens offline only
+    ↑ new model deployed to Python service after validation
+This architecture is deliberately conservative. NT8 is the execution firewall. Python handles intelligence. The two communicate through a simple file-based interface that degrades gracefully: if the Python service stops working, NT8 falls back to no-trade mode rather than trading blindly.
+
+SECTION 3: BEST MACHINE LEARNING APPROACH
+Evaluating Each Paradigm
+Supervised Learning (Classification / Regression)
+Role: Primary workhorse for regime classification and signal scoring. Train on labeled historical examples where regime is known and outcome is measured. Strengths: Interpretable, fast inference, well-understood validation methodology, does not require a simulator. Weaknesses: Requires careful labeling, susceptible to concept drift, stale if not retrained. Realistic for intraday futures: Yes, highly practical. Verdict: Core component. Use for regime classifier and setup quality scorer.
+
+Reinforcement Learning
+Role: Could theoretically learn an optimal policy end-to-end without explicit labeling. Strengths: Can optimize complex multi-step objectives. Weaknesses: Requires a realistic market simulator (essentially impossible to build without introducing survivorship bias), sample-inefficient, prone to overfitting the simulator rather than the real market, produces black-box policies that cannot be audited, and is genuinely dangerous when deployed on a real account without years of careful validation. Realistic for intraday futures: For a retail/prop trader: No. For a team of quants with a proper market simulator: Barely. Verdict: Avoid for now. Revisit only after the supervised system has 12+ months of live performance data.
+
+Online Learning
+Role: Adapts model parameters incrementally with each new observation rather than full retraining. Strengths: Can respond quickly to concept drift. Weaknesses: Extremely prone to overfitting recent data, can destabilize rapidly during unusual market conditions, very difficult to validate properly. Realistic for intraday futures: Dangerous without careful guardrails. Verdict: Limited use. Apply only for slow-moving calibration of regime thresholds, not for core model weights.
+
+Hidden Markov Models (HMMs)
+Role: Model market regimes as latent states with transition probabilities. Strengths: Principled probabilistic framework for regime switching, smooth transitions, outputs regime probabilities not just hard labels. Weaknesses: Assumes fixed number of regimes, assumes Markovian transitions (questionable for financial markets), can be unstable with noisy data. Realistic for intraday futures: Yes, and underused at the retail level. Verdict: Use as a secondary validation layer for regime classification. An HMM trained on volatility, trend, and volume features can provide a regime probability distribution that supplements the primary XGBoost classifier.
+
+Gradient Boosting (XGBoost / LightGBM / CatBoost)
+Role: Primary model for regime classification and setup quality scoring. Strengths: Best-in-class performance on tabular data, handles mixed feature types, built-in feature importance, robust to irrelevant features, fast inference, excellent regularization options. Weaknesses: Cannot natively model sequential structure, requires careful time-series cross-validation to avoid leakage. Realistic for intraday futures: Yes, the most practical choice. Verdict: Primary model architecture. Use XGBoost for regime classifier and LightGBM for signal quality scorer due to slightly faster inference.
+
+Random Forests
+Role: Ensemble baseline, useful for feature importance estimation. Strengths: Robust, low variance, good for feature selection. Weaknesses: Slower than gradient boosting, slightly lower performance on structured data. Verdict: Use during research phase for feature selection and importance ranking. Not the primary production model.
+
+LSTM / Temporal CNN / Transformer-based Time Series Models
+Role: Could model sequential price structure and temporal dependencies. Strengths: Can capture long-range dependencies in time series. Weaknesses: Require large amounts of data to generalize, very prone to overfitting on financial data, slow to train and retrain, difficult to interpret, inference is slower, and financial time series does not have the kind of sequential structure that makes LSTMs shine in NLP tasks. Realistic for intraday futures: Marginal. The performance uplift over gradient boosting on properly engineered tabular features is rarely worth the complexity cost. Verdict: Evaluate in research but do not use in Version 1 or Version 2. Consider only in Version 3 with careful validation.
+
+Meta-Labeling
+Role: A technique where a primary model generates signals and a secondary model predicts the probability that the primary signal will be profitable. Strengths: Directly addresses the "when to trade" problem, naturally produces a confidence score, reduces false positives. Weaknesses: Requires enough trade history to train the meta-model, adds a layer of complexity. Realistic for intraday futures: Yes, highly practical and underused. Verdict: Include as a core component. The setup quality scorer in the signal layer is essentially a meta-label model.
+
+Contextual Bandits
+Role: An intermediate between supervised learning and RL. Select which policy to apply given current context, with feedback from outcomes. Strengths: Handles the exploration-exploitation tradeoff, can adapt policy selection online. Weaknesses: Requires a stationary reward signal, complex to implement correctly. Verdict: Conceptually useful for the policy engine. Implement as a simplified offline-trained version, not an online learner.
+
+Bayesian Methods
+Role: Probabilistic modeling with explicit uncertainty quantification. Strengths: Natural output is a probability distribution, explicitly models uncertainty, resistant to overconfidence. Weaknesses: Computationally expensive for high-dimensional feature spaces, hard to scale to intraday speeds. Verdict: Use Bayesian concepts (particularly calibration and uncertainty) in model output interpretation, but do not use Bayesian neural networks or full Bayesian inference as the primary model.
+
+Anomaly Detection
+Role: Identify unusual market conditions that fall outside the training distribution. Strengths: Can flag when the model should not be trusted. Weaknesses: Hard to tune, high false positive rate. Verdict: Use as a safety layer. If the current feature vector is far from the training distribution (measured by isolation forest or simple distance metrics), the system should automatically reduce size or stop trading.
+
+Final Recommended ML Architecture
+Layer 1: Anomaly Detection
+   → Flag if current conditions are out-of-distribution
+   → If flagged: force no-trade mode
+
+Layer 2: HMM Regime Prior
+   → Provide probabilistic regime distribution as a feature
+
+Layer 3: XGBoost Regime Classifier (primary)
+   → Classify current regime with confidence score
+   → Route to appropriate specialist
+
+Layer 4: LightGBM Signal Quality Scorer (meta-label approach)
+   → Given the active regime and current setup, score the quality of the potential trade
+   → Outputs: long_score, short_score, no_trade_score, confidence
+
+Layer 5: Rule-Based Policy Engine
+   → Translates model outputs into behavioral policies
+   → Uses threshold-based switching with hysteresis
+
+Layer 6: Risk Engine (independent, rule-based)
+   → Hard constraints, never ML-driven
+The reason the risk engine is rule-based and not ML-driven is critical: machine learning models can be confidently wrong. Risk constraints must never be subject to a model's confidence score. They are the floor that exists precisely because models fail.
+
+SECTION 4: MARKET REGIME DETECTION
+Regime Taxonomy
+The system should recognize the following 10 regime states. Note that these are not perfectly mutually exclusive. The classifier outputs a probability distribution across states, and the dominant state determines policy selection.
+
+Regime ID	Label	Description
+R0	Trend Day - Bull	Strong directional bias upward, breakouts holding, pullbacks shallow
+R1	Trend Day - Bear	Strong directional bias downward, breakdowns holding, rallies failing
+R2	Range / Chop Day	Price oscillating between defined support and resistance, no directional trend
+R3	Breakout Day	Compression followed by directional expansion with volume confirmation
+R4	Mean Reversion Day	Overextended moves failing, price returning to VWAP or midpoint repeatedly
+R5	High Volatility / News Distorted	Elevated ATR, irregular structure, headline-driven movement
+R6	Low Volatility Compression	Tight range, low ATR, accumulation or distribution phase
+R7	Opening Drive Continuation	Strong directional move off the open that persists into midday
+R8	Opening Drive Failure / Reversal	Initial directional move failing and reversing within 90 minutes of open
+R9	Late Session Expansion	Directional move developing in the final 90 minutes of RTH
+Features Used for Regime Detection
+ATR-Based Features
+Current ATR(14) on 5-min bars relative to 20-day rolling average ATR: ATR_ratio = ATR_current / ATR_20d_avg. Values above 1.5 suggest elevated volatility. Values below 0.7 suggest compression.
+ATR expansion rate: Rate of change of ATR over the last 6 bars. Positive acceleration suggests a regime transition toward volatility.
+Intraday realized volatility: Standard deviation of 5-min returns since session open, annualized and compared to prior 10-session average.
+Trend and Direction Features
+Trend Efficiency Ratio (Kaufman): ER = abs(price_now - price_N_bars_ago) / sum(abs(bar_to_bar_changes) over N). Range 0 to 1. Values above 0.6 indicate efficient trending. Values below 0.35 indicate choppy, inefficient price action. Use N=20 bars on the 5-minute chart.
+VWAP relationship: Distance of current price from VWAP in ATR units. Persistent movement above VWAP with price continuing to make higher lows = bullish trend. Oscillation across VWAP = range or chop.
+Local slope: Linear regression slope of closes over last 12 bars on 5-min chart, normalized by ATR.
+Higher high / higher low count: Count of HH and HL formations in the last 15 bars vs LH and LL formations.
+Return autocorrelation: 10-bar autocorrelation of 5-min returns. Positive autocorrelation suggests trending. Negative suggests mean reversion.
+Opening Range Features (Critical)
+Opening Range size: High minus low of the first 30 minutes of RTH, expressed in ATR units. Large opening range relative to average = likely volatility day.
+Price position relative to opening range at 10:30 AM: Above the top = bullish breakout. Below the bottom = bearish breakdown. Inside = potential range day.
+Opening range expansion rate: How quickly after 9:30 AM did price break the opening range?
+Opening drive strength: The absolute point move in the first 15 minutes divided by ATR.
+Volume and Relative Volume Features
+Relative volume: Current session volume through current time divided by average volume at same time of day over last 20 sessions. Values above 1.4 indicate elevated participation.
+Volume acceleration: Rate of change of relative volume over last 30 minutes.
+Volume profile shape: Is volume concentrated near VWAP (range-like) or skewed to one end (directional)?
+Overnight and Prior Session Features
+Overnight gap: Difference between yesterday's RTH close and today's overnight session open, in ATR units.
+Overnight range size: High minus low of overnight session relative to normal overnight range.
+Prior day type label: Whether yesterday was classified as a trend, range, or high-volatility day. Markets frequently exhibit day-type clustering.
+Prior day close relative to prior day range: Close in the top third of prior day range = bullish positioning. Close in bottom third = bearish.
+Prior day high/low distance: Distance of current price from prior day high and prior day low in ATR units. Price approaching prior day high = potential resistance or breakout trigger.
+Market Structure Features
+Failed breakout count: Number of times in the current session that price broke a significant level and then reversed within 15 minutes. High counts indicate a mean-reversion or fakeout environment.
+VWAP reversion count: Number of times price has touched and bounced from VWAP in the current session.
+Range expansion vs. time elapsed: The percentage of the day's total range that has developed in the first 90 minutes. If more than 60% of the daily range develops early, the rest of the day is often choppy.
+News and Event Flags (Binary)
+High-impact event today flag: 1 if a tier-1 economic release is scheduled today, 0 otherwise.
+Event in next 60 minutes flag: 1 if a tier-1 event is within 60 minutes, 0 otherwise.
+Post-event flag: 1 for the 30 minutes following a major event, 0 otherwise.
+FOMC meeting day flag: Special flag for FOMC announcement days, which require their own behavioral policy.
+Time-of-Day Features
+Minutes since RTH open: Raw time feature. Important for separating opening dynamics from midday behavior.
+Time bucket: Categorical: opening session (9:30–10:30), mid-morning (10:30–12:00), midday chop (12:00–2:00 Eastern), afternoon session (2:00–4:00 Eastern).
+Minutes until session close: Critical for position sizing and willingness to enter new trades.
+Regime Update Frequency and Confidence
+The regime classifier updates every 5 minutes on bar close. However, the regime label is sticky: the system requires the classifier to output a different regime with probability above 0.65 for at least 3 consecutive updates (15 minutes) before switching the active regime label. This prevents rapid flipping during noisy periods.
+
+Confidence score is computed as the maximum probability across regime classes output by the XGBoost classifier. A confidence below 0.55 triggers a conservative mode regardless of which regime is nominally active. Confidence below 0.40 triggers no-trade mode.
+
+SECTION 5: FEATURE ENGINEERING
+Complete Feature List with Specifications
+Category 1: Price Action Features
+Feature: Bar return (5-min) — (close - open) / ATR(14). Normalized by ATR so it is comparable across instruments and time. Used for signal generation and regime detection. Look-back: current bar only.
+
+Feature: Range ratio — (high - low) / ATR(14). Bar range relative to recent average range. Values above 1.5 indicate expansion bars. Values below 0.5 indicate inside bars. Used for both regime detection and signal generation.
+
+Feature: Wick ratio — (upper_wick + lower_wick) / (high - low). High wick ratios indicate rejection and indecision. Used in mean reversion signal generation. Look-back: current bar.
+
+Feature: Body direction persistence — Count of consecutive bars closing in the same direction (positive or negative body). Streak of 4 or more in the same direction is a trend persistence signal.
+
+Feature: Close position in bar range — (close - low) / (high - low). Values near 1.0 indicate bullish close, values near 0.0 indicate bearish close. Used for signal generation.
+
+Feature: Rolling return over N bars — Compute for N = 3, 6, 12, 24 bars on 5-min chart. Use all four. Do not use a single lookback. Normalized by ATR.
+
+DANGER WARNING: Lagged price patterns — Any feature that amounts to "price went up 3 bars ago, therefore..." is likely to overfit. Avoid computing simple pattern-matching features on raw price sequences. The model will fit noise.
+
+Category 2: Volatility Features
+Feature: ATR ratio — ATR(14) current / ATR(14) 20-day rolling average. Normalized measure of current volatility vs. recent history. Z-scored over 60 days. Used for regime detection and position sizing.
+
+Feature: Volatility acceleration — Rate of change of ATR(14) over last 6 bars. Positive and accelerating = potential regime shift to high volatility.
+
+Feature: Realized vs. implied volatility gap — If VIX data is available (for ES/NQ), compare VIX to realized intraday volatility. A large gap between high VIX and low realized volatility suggests compression before expansion.
+
+Feature: Volatility compression score — Number of consecutive bars where (high - low) / ATR(14) < 0.6. A count of 6 or more compressed bars is a significant compression signal. This is a non-linear feature and should be treated as an ordinal rather than continuous.
+
+Feature: Overnight vs. RTH volatility ratio — Overnight range divided by average overnight range. Elevated overnight activity often predicts elevated RTH volatility.
+
+Category 3: Structure Features
+Feature: VWAP distance — (price - VWAP) / ATR(14). Sign indicates which side of VWAP. Magnitude indicates degree of extension. Z-scored. This is one of the most important features in the system.
+
+Feature: Prior day high/low distance — (price - PDH) / ATR(14) and (price - PDL) / ATR(14). These are critical support and resistance reference points.
+
+Feature: Opening range position — (price - OR_low) / (OR_high - OR_low). Values below 0 or above 1 indicate the price has broken the opening range.
+
+Feature: Efficiency ratio (Kaufman) — As defined above. Critical for distinguishing trending from choppy conditions. Update every bar. 20-bar lookback.
+
+Feature: Trend slope (linear regression) — Slope of OLS regression of close prices over last 12 bars, normalized by ATR. Sign indicates direction, magnitude indicates strength.
+
+Feature: Higher high / lower low count — Over last 15 bars: count of HH formations vs LL formations. Asymmetric counts indicate trending. Balanced counts indicate ranging.
+
+Feature: Failed breakout frequency — Rolling count of level-break-and-reverse events in current session. Computed at 30-minute intervals. High counts suppress breakout policies.
+
+Category 4: Volume Features
+Feature: Relative volume — Current session cumulative volume / same-time-of-day volume average (20-session rolling). Updated every 5 minutes.
+
+Feature: Volume rate of change — Rate of change of per-bar volume over last 6 bars. Acceleration indicates institutional participation.
+
+Feature: VWAP volume weight skew — Is volume above or below VWAP for the session? Computed as: (volume above VWAP - volume below VWAP) / total volume. Positive = net buying, negative = net selling.
+
+Feature: Volume per point — Volume divided by session range in points. Low values indicate thin markets. High values indicate active price discovery.
+
+DANGER WARNING: Volume features are instrument-specific. Do not use raw volume across instruments or across time of day without normalization. Volume at 9:35 AM is not comparable to volume at 2:00 PM on the same day. Always normalize.
+
+Category 5: Time-of-Day Features
+Feature: Minutes since open (raw) — Integer minutes since 9:30 AM Eastern. Include both raw and sin/cos encoded versions to capture cyclicality without assuming linearity.
+
+Feature: Time bucket (categorical) — One-hot encoded: Opening (0–60 min), Pre-Midday (60–150 min), Midday (150–270 min), Afternoon (270–390 min).
+
+Feature: Time until close — Minutes until 4:00 PM Eastern. Below 30 minutes triggers position-size reduction regardless of signals.
+
+Feature: Day of week — One-hot encoded. Mondays and Fridays show statistically different behavior in futures markets. This is a weak but legitimate feature.
+
+Category 6: Session Context Features
+Feature: Prior day regime label — One-hot encoded regime classification from prior session. Markets exhibit regime persistence and alternation patterns.
+
+Feature: 3-day trend of daily ATR — Is daily ATR expanding or contracting over last 3 sessions? Expanding = increasing uncertainty.
+
+Feature: Overnight gap size — (RTH_open - prior_RTH_close) / ATR(14). Large positive gaps bias the system to expect early weakness (gap fill tendency). Large negative gaps bias toward early strength.
+
+Feature: Overnight range completeness — Overnight range divided by typical overnight range. Above 1.5 = overactive overnight, suggests news or macro event impact.
+
+Category 7: Event and News Features
+Feature: High-impact event today (binary) — 1 if FOMC, CPI, NFP, PPI, or equivalent scheduled today. This single flag changes system behavior more than any model output.
+
+Feature: Event tier — Categorical: Tier 1 (FOMC, NFP, CPI), Tier 2 (PPI, Claims, ISM), Tier 3 (minor releases). Different tiers trigger different risk reductions.
+
+Feature: Time since last event — Minutes since the most recent scheduled event release. The first 15 minutes post-release are particularly dangerous for directional models.
+
+Feature: CL-specific: EIA report flag — Binary flag for crude oil inventory report day (typically Wednesday 10:30 AM). This is an instrument-specific event that dramatically alters CL behavior.
+
+DANGER WARNING: Event features are not predictive in the traditional ML sense. They do not predict direction. They predict volatility regime and reliability of signals. Use them to suppress trading or widen thresholds, not to generate directional predictions.
+
+Features That Are Dangerous Due to Overfitting Risk
+The following features are commonly used in retail trading research but consistently overfit and should be excluded from the model:
+
+Any specific candlestick pattern name (doji, hammer, etc.) encoded as a binary feature — these have too few examples per pattern to generalize
+Specific price level touches (e.g., "price touched exactly X.XX") — will overfit to in-sample price levels that never recur
+Features derived from optimization of indicator parameters — if you optimized the parameter to find it, you cannot then use it as a feature
+High-lag autocorrelations beyond 30 bars — noise dominates signal
+Any feature that required hindsight to compute (e.g., "was this the highest point of the day") — obviously cannot be used in real time
+Day-specific seasonal patterns on small samples — claiming "the first Tuesday after NFP always does X" requires far more data than any retail trader has
+SECTION 6: NEWS, EVENTS, AND DAILY CONTEXT
+Framework for Economic Event Integration
+Practical Representation
+What is realistic: Economic calendar data is freely available from sources such as the ForexFactory calendar, TradingEconomics, or Econoday via CSV or API. This data can be pulled daily in a Python pre-session script and converted into a simple structured format: date, time, event name, tier level, expected value, prior value.
+
+What is not realistic: NLP analysis of news headlines in real time, sentiment scoring from news feeds, or interpretation of Fed speaker language. These require infrastructure, clean data, and validated models that are not available to a retail trader. They will introduce more noise than signal.
+
+What the system should use: A simple event flag system with five states:
+
+Event State 0: No events today
+Event State 1: Tier 3 event (minor) - minimal behavior change
+Event State 2: Tier 2 event today (PPI, Claims, ISM) - reduce size, avoid entries within 15 min of event
+Event State 3: Tier 1 event today (CPI, NFP, FOMC) - aggressive size reduction, possible no-trade until post-event
+Event State 4: Active FOMC meeting day - special playbook (defined below)
+Behavioral Rules by Event State
+Before Tier 1 event (within 60 minutes): Force into minimum position size (1 micro contract). Disable breakout and momentum policies. Only allow mean reversion to VWAP if the signal is very high quality (score above 0.80). The market is pricing in uncertainty before the release, and directional models are unreliable.
+
+During the 15-minute window around any Tier 1 event: Complete trading halt enforced as a hard rule in NT8. No new entries permitted. Existing positions closed before the event window opens if within 5 minutes of event time.
+
+After Tier 1 event (0–30 minutes post-release): Initial reaction phase. Do not trade the first 5 minutes after release. Markets are processing the print and reversals are common. After 5 minutes, the system may re-enter trading at 50% of normal position size if:
+
+The initial move has a clear directional structure
+Volume is elevated and confirmatory
+The move does not reverse in the first 3 bars post-event
+After Tier 1 event (30–90 minutes post-release): Markets begin to establish a new post-event regime. Return to full evaluation, but continue at reduced position size (75% of normal max) until a regime classification is confirmed with confidence above 0.65.
+
+FOMC Day (Special Playbook): FOMC announcement days deserve their own behavioral policy. The pre-announcement period (typically morning until 2:00 PM Eastern) is characterized by low volume, tight ranges, and high potential for false breakouts as the market waits. The post-announcement period (2:00–3:00 PM) is characterized by violent initial reactions followed by counter-moves. The system should:
+
+Trade very conservatively or not at all from 11:00 AM to 2:00 PM Eastern
+Implement a complete trading halt from 1:45 PM to 2:15 PM Eastern (around the announcement)
+Return with reduced size only after 2:30 PM once the initial reaction and reversal pattern has established
+CL-Specific EIA Day Playbook: Every Wednesday at 10:30 AM Eastern, the EIA crude oil inventory report releases. This consistently produces sharp 2–5 minute moves in CL and MCL. The system must not be in a CL position within 15 minutes before this release. After the release, CL often establishes a clear trend for 60–90 minutes if the inventory number significantly surprises. The system can re-engage with a breakout or momentum policy after the initial 5-minute reaction, with reduced size.
+
+Multi-Day Context
+The system should carry forward a rolling context of the last 5 sessions, specifically:
+
+Whether each prior session was a trend, range, or high-volatility day
+Whether the market is in a multi-day trend or multi-day chop regime
+Whether volatility is expanding or contracting on a multi-day basis
+This context influences starting regime probabilities before the session opens. A market that has had 3 consecutive trend days in the same direction is more likely to see a pause or mean reversion day than a fourth trend day. This prior should be reflected as a Bayesian adjustment to the regime prior, not a hard rule.
+
+SECTION 7: SIGNAL GENERATION FRAMEWORK
+Why Simple Up/Down Prediction Fails
+A model that predicts "up" or "down" for the next bar faces three fundamental problems. First, the correct direction is often right but the magnitude is too small to overcome spread and commissions. Second, a correct directional prediction at the wrong entry time produces a losing trade. Third, purely directional models have no concept of trade quality, timing uncertainty, or regime reliability.
+
+Recommended Signal Stack
+The system should output the following signal vector at each bar close:
+
+Signal Vector {
+    regime_label: integer (0-9)
+    regime_confidence: float (0.0 - 1.0)
+    
+    setup_quality_score: float (0.0 - 1.0)
+    long_expectancy_score: float (0.0 - 1.0)
+    short_expectancy_score: float (0.0 - 1.0)
+    no_trade_score: float (0.0 - 1.0)
+    
+    expected_excursion_long: float (in ATR units, if long)
+    expected_excursion_short: float (in ATR units, if short)
+    
+    signal_confidence: float (0.0 - 1.0)
+    risk_multiplier: float (0.5, 0.75, 1.0, 1.25, 1.5)
+    
+    anomaly_flag: binary (0 or 1)
+    event_risk_flag: integer (0-4)
+}
+Setup Quality Score (Meta-Label Model)
+This is the most important signal output. It asks: "Given the current regime, current features, and current setup structure, what is the probability that a trade entered here will reach its target before its stop?" This is trained as a binary classification problem on historical trade outcomes.
+
+The target label for training: 1 if trade_PnL > 0 AND trade reached target before stop, 0 otherwise.
+
+This meta-label model is trained separately for each regime. A long setup quality score of 0.70 in a Trend Day - Bull regime means that historically, 70% of long entries taken under these conditions were profitable. The model needs to learn to be calibrated, not just directionally accurate.
+
+Long and Short Expectancy Scores
+These are normalized expected PnL values given a standardized risk/reward profile. They are outputs of separate models trained on historical trade returns (regression, not classification). They incorporate both the probability of winning and the magnitude of the win.
+
+long_expectancy_score = P(long_wins) × avg_long_win - P(long_loses) × avg_long_loss, normalized to 0–1 range.
+
+Expected Excursion (in ATR units)
+A regression model predicts the expected maximum favorable excursion from entry, in ATR units. This informs target placement. If the model expects 1.2 ATR of favorable excursion on the long side, the system can place a target at 1.0 ATR (conservative) or 1.2 ATR (aggressive).
+
+Signal Confidence Score
+This is the meta-confidence: how confident is the overall signal stack in its own output? Computed as the geometric mean of regime confidence and setup quality score:
+
+signal_confidence = sqrt(regime_confidence × setup_quality_score)
+
+Only signal confidence above 0.55 triggers an entry evaluation. Only above 0.70 triggers full-size entry evaluation.
+
+No-Trade Score
+The system explicitly models the value of not trading. High no-trade scores arise when:
+
+Regime confidence is low
+Long and short expectancy scores are similar (no clear directional edge)
+Anomaly flag is set
+Event risk flag is 3 or 4
+This forces the system to explicitly choose to not trade rather than defaulting to trading by searching for some signal.
+
+SECTION 8: STRATEGY SELECTION / POLICY ENGINE
+Policy Definitions
+Policy 1: Momentum Continuation
+Activate when: Regime is R0 (Trend Bull) or R1 (Trend Bear) with confidence above 0.65, price above VWAP for R0 or below VWAP for R1, efficiency ratio above 0.55, opening drive has confirmed direction. Behavior: Enter pullbacks to the 8/21 EMA ribbon on 5-min chart, in the direction of the trend, with targets at 1.5× initial risk or prior swing highs/lows. Deactivate when: Efficiency ratio drops below 0.40 for 3 consecutive bars, price crosses VWAP, regime confidence drops below 0.50.
+
+Policy 2: Pullback to Structure
+Activate when: Regime is R0 or R1 with moderate confidence (0.55–0.65), or regime is R7 (Opening Drive Continuation) with high confidence. Price has made at least one confirmed swing in the session direction. Behavior: Enter at identified structure levels: VWAP, prior swing low/high in trend direction, 50% retracement of initial session move. Deactivate when: New low/high forms below/above previous swing counter to trend, suggesting trend failure.
+
+Policy 3: Breakout Confirmation
+Activate when: Regime is R3 (Breakout Day) with confidence above 0.65, relative volume above 1.3, price has breached a compression range with a bar closing beyond the range boundary. Behavior: Enter after confirmation bar closes above/below level with volume, target is range size projected from breakout point. Deactivate when: Price re-enters the compression range after breakout (failed breakout = immediate regime reclassification toward R4).
+
+Policy 4: Failed Breakout Reversal
+Activate when: A Policy 3 breakout attempt occurs but price reverses within 2 bars, closing back inside the prior range. This is a counter-policy that exploits the opposite direction. Behavior: Enter counter to the failed breakout direction as price re-enters the range, with target at VWAP or range midpoint. Deactivate when: Price makes a second, more forceful breakout attempt in the original direction.
+
+Policy 5: Mean Reversion to VWAP
+Activate when: Regime is R4 (Mean Reversion Day) or R2 (Range Day) with confidence above 0.60. Price is extended from VWAP by more than 1.5 ATR. Return autocorrelation is negative (suggesting oscillating behavior). Behavior: Enter in the direction of VWAP from price extremes. Target is VWAP. Stop is beyond the recent swing extreme. Deactivate when: Price makes a new session extreme (VWAP extension increases rather than decreases), suggesting mean reversion thesis is wrong.
+
+Policy 6: No-Trade Mode
+Activate when:
+
+Event risk flag is 3 or 4
+Signal confidence below 0.40
+Regime confidence below 0.45
+Anomaly flag is set
+Daily loss limit is within 75% of maximum
+Consecutive loss count is 3 or more
+Time is within 30 minutes of session close
+Time is within 15 minutes of a Tier 2+ event
+Behavior: Flat. Do not enter any positions. Monitor and wait for conditions to improve.
+
+Preventing Policy Flip-Flopping
+The policy engine uses a hysteresis mechanism: once a policy is activated, the opposing deactivation criteria must be met for a minimum of 15 minutes (3 bar closings on 5-min chart) before the policy can switch. This prevents the system from whipsawing between policies during noisy transitions.
+
+Additionally, a policy confidence decay factor is applied: each time the regime classifier outputs a different regime, the confidence of the currently active policy decreases by 0.10. If confidence decays below the activation threshold, the policy switches to No-Trade Mode pending re-evaluation.
+
+Blending vs. Hard Switching
+The recommended design uses hierarchical filtering with hard switching at the top level and soft thresholds at the signal level, not weighted blending of signals. The reason is interpretability and auditability. If the system blends a momentum signal and a mean-reversion signal, the resulting behavior is neither, and the outcomes cannot be analyzed by regime type.
+
+SECTION 9: RISK MANAGEMENT ENGINE
+Core Philosophy
+The risk engine is the only part of the system that is not allowed to be uncertain. Every other module can output probabilities and scores. The risk engine outputs hard limits that cannot be overridden by model confidence. This is the institutional risk manager function.
+
+Per-Trade Risk Limits
+For a $2,000 drawdown limit account (prop or small personal account):
+
+Maximum risk per trade: 2% of drawdown limit = $40. This means if using MNQ (approximately $2 per point), the maximum stop distance is 20 points. If using MES (approximately $5 per 1-point move), maximum stop is 8 points.
+
+Maximum daily loss: 8% of drawdown limit = $160. This is the hard daily stop. The system locks out for the day when this is hit, with no exceptions.
+
+Maximum consecutive losses before forced pause: 3 consecutive losing trades trigger a mandatory 30-minute pause and position size reduction to 50% for the remainder of the session.
+
+Maximum trades per day: 6 trades across all instruments. This is a deliberate constraint to prevent overtrading during unfavorable conditions. More trades in a choppy environment does not increase edge. It increases cost.
+
+Maximum open exposure at any time: 1 position in 1 instrument at any time. No pyramiding in early-phase deployment. Pyramiding is a Version 3 feature.
+
+Instrument-Specific Limits
+Instrument	Contract	Max Size	Max Daily Risk	Notes
+MNQ	Micro NQ	2 contracts	$80	Start here
+NQ	Full NQ	FORBIDDEN initially	N/A	$20/point - one bad trade destroys account
+MES	Micro ES	2 contracts	$80	Start here
+ES	Full ES	FORBIDDEN initially	N/A	$50/point - too large
+MGC	Micro Gold	2 contracts	$80	Acceptable
+GC	Full Gold	FORBIDDEN initially	N/A	$10/point × 100oz
+MCL	Micro CL	2 contracts	$80	Acceptable
+CL	Full CL	FORBIDDEN initially	N/A	$10/point × 1000bbl
+Full contracts on any of these instruments are absolutely forbidden on accounts with a $2,000 drawdown limit. One limit move in CL, one flash crash spike in NQ, one news gap in GC can exceed the entire drawdown limit in a single trade. The micro contracts exist precisely for this use case.
+
+Risk Scaling by Model Confidence
+The risk engine allows scaling only within the defined maximum, never above it:
+
+If signal_confidence < 0.55: trade size = 0 (no trade)
+If signal_confidence 0.55 to 0.65: trade size = 1 micro contract
+If signal_confidence 0.65 to 0.75: trade size = 1 micro contract
+If signal_confidence 0.75 to 0.85: trade size = 2 micro contracts
+If signal_confidence > 0.85: trade size = 2 micro contracts (maximum, not 3)
+Note that confidence never unlocks more than 2 contracts. This cap is hard. "The model is very confident" is not a justification for oversizing on a small account.
+
+Drawdown-Based Risk Throttling
+If current_daily_loss < 25% of daily limit: normal operation
+If current_daily_loss 25%-50% of daily limit: reduce max size by 50%
+If current_daily_loss 50%-75% of daily limit: reduce max size by 75%, no breakout trades
+If current_daily_loss > 75% of daily limit: all trading halted for the day
+After winning days, the risk parameters do not expand. There is no "house money" effect in this system. Today's risk budget is always based on the drawdown limit, not on yesterday's PnL.
+
+Handling Volatility Spikes and Slippage
+When ATR ratio exceeds 2.0 (meaning current ATR is double the 20-day average), the system automatically widens stop distances to maintain dollar risk rather than tightening stops. Specifically:
+
+adjusted_stop_ticks = base_stop_ticks × ATR_ratio
+
+This prevents the common failure mode where fixed-tick stops get triggered by normal noise in a high-volatility regime, resulting in a sequence of stopped-out trades before any trend develops.
+
+Correlated Loss Prevention
+When trading multiple instruments in the same session, the system tracks whether the instruments are likely correlated on the current day. NQ and ES are highly correlated. If a trade in MNQ is stopped out due to a directional move, the system waits 15 minutes before entering MES in the same direction, to avoid effectively doubling up on the same loss.
+
+SECTION 10: TRAINING DATA DESIGN
+Raw Data Requirements
+Primary data: 1-minute OHLCV bars for all target instruments. Minimum 3 years of history, 5 years preferred. Source: Kinetick (NT8's preferred data provider), CQG, or Rithmic historical data.
+
+Session data: Daily OHLCV (RTH session only), plus overnight session high/low/open/close.
+
+Economic calendar data: Historical dated records of scheduled events with actual, expected, and prior values. Source: FRED API, TradingEconomics export, or historical ForexFactory data.
+
+Alternative: Tick data is ideal for computing true realized volatility and order flow metrics but is very large and harder to work with. For Version 1, 1-minute bars are sufficient. Tick data becomes relevant in Version 3.
+
+Timeframe Strategy
+Use a multi-timeframe feature approach rather than picking a single timeframe:
+
+5-minute bars: Primary trading timeframe. All signals generated here.
+1-minute bars: Entry timing precision. Used only for entry refinement in NT8.
+30-minute bars: Session structure context. Opening range, midday reference.
+Daily bars: Regime context, prior day features, multi-day trend.
+All features should be aligned to the 5-minute bar close to prevent look-ahead bias.
+
+Trade Labeling
+This is where most retail ML trading projects fail. Label design is more important than model architecture.
+
+Label for regime classifier: Manually label a subset of historical days with regime types based on post-hoc analysis (daily return, daily range, ATR ratio, VWAP oscillation count). Use these as ground truth to train and validate the classifier. Target: label 3 years of daily sessions (approximately 756 trading days).
+
+Label for setup quality (meta-label model): For each potential trade signal (bar where setup criteria are met), the label is: did a trade entered at the next bar's open, with a stop at X ATR below entry, reach a target of Y ATR above entry within Z bars?
+
+Target construction:
+
+For long setup at bar B:
+  entry = close of bar B (next open approximation)
+  stop = entry - 1.5 × ATR(14)
+  target = entry + 2.0 × ATR(14)
+  label = 1 if target is hit within 20 bars before stop is hit
+  label = 0 otherwise
+This produces naturally imbalanced labels (more 0s than 1s). That is correct. The model should learn that most setups are mediocre.
+
+Avoiding Data Leakage
+The single most common and most serious error in financial ML backtesting is data leakage: using future information to construct past features or labels.
+
+Every feature must be computable using only data available at the bar close at which it is evaluated. Specifically:
+
+Session VWAP at any point uses only volume and price data from bars already closed in the session
+ATR uses only past bars, not the current bar if it is still open
+The opening range is not known until the first 30 minutes are complete. Features based on the opening range cannot be used for the first 6 bars of the session
+Prior day high/low are known at session open — these are safe features
+Today's economic events are known before the session opens — these are safe features
+Today's final daily range, final VWAP position, etc. cannot be used as features (only as labels)
+Handling Non-Stationarity and Concept Drift
+Financial markets are non-stationary. The statistical relationships that held in 2019 may not hold in 2024 because market microstructure, participant composition, and macro regime have all changed.
+
+Solution 1: Use relative features, not raw features. ATR ratio is more stationary than raw ATR. VWAP distance in ATR units is more stationary than VWAP distance in points.
+
+Solution 2: Train on rolling windows, not the entire history. The model trained on 2017–2021 data may not apply to 2023 market conditions. Use rolling window training with walk-forward validation.
+
+Solution 3: Monitor feature distributions. Compute the distribution of each feature over the training set. During live operation, monitor whether feature distributions shift. If the feature distribution drifts significantly (measured by KL divergence or PSI), flag the model as potentially stale.
+
+Solution 4: Regime-specific models. A model trained only on Trend Day data is more stationary within regime than a model trained on all data. Regime-specific models degrade more predictably than regime-agnostic models.
+
+Class Imbalance
+High-quality setups are rare. Profitable setups are even rarer. Expect label imbalance of approximately 30–40% positive for directional labels and potentially 20–30% positive for the meta-label quality model.
+
+Handling approach: Use class weights in XGBoost/LightGBM training (scale_pos_weight parameter). Do not oversample or SMOTE financial time series data — SMOTE creates synthetic examples that do not represent real market conditions and will cause overfit.
+
+SECTION 11: MODEL TRAINING AND UPDATING
+What Should Adapt in Real Time vs Offline
+Real-time (inside trading session): Nothing structural should change in real time. The models being used today were validated before today's session. Real-time adaptation is limited to:
+
+Risk throttling based on intraday PnL (described in Section 9)
+Regime label updates every 5 minutes
+Signal score updates every bar close
+Offline (nightly or weekly): Feature drift monitoring, performance metric tracking, regime distribution tracking.
+
+Retraining (weekly or monthly, never automatically in response to a few bad days): Model weights are only updated after a formal evaluation process.
+
+Training Process
+Initial Training
+Step 1: Compile historical dataset as described in Section 10. 3 years minimum.
+
+Step 2: Run walk-forward validation with the following structure:
+
+Training fold: 12 months
+Validation fold: 3 months
+Step forward by 1 month
+Repeat across entire dataset
+This produces out-of-sample performance metrics for every period. The model is only deployed if its out-of-sample metrics (profit factor, win rate by regime, Sharpe-like stability) meet the thresholds defined in Section 12.
+
+Step 3: Train final model on all available history before deployment date.
+
+Step 4: Paper trade for minimum 4 weeks before any live capital is at risk.
+
+Rolling Retraining Schedule
+Nightly: compute feature drift metrics, log trade outcomes
+Weekly: evaluate model performance metrics (Monday morning)
+  → If performance is within acceptable range: no action
+  → If performance degrades: flag for review, do NOT auto-retrain
+Monthly: full retraining with 1 additional month of data added
+  → Validate new model with walk-forward before deploying
+  → Deploy new model only after it passes validation thresholds
+Model Decay Detection
+The system tracks the following metrics on a rolling 20-trade basis:
+
+1. Rolling profit factor (target: above 1.3, alert: below 1.0)
+2. Rolling win rate (target: above 45%, alert: below 35%)
+3. Average signal confidence at time of entry (should be stable)
+4. Regime classification accuracy vs post-hoc labels (checked weekly)
+5. Feature drift score (PSI across all features, alert: PSI > 0.25)
+When any two of these metrics trigger their alert threshold simultaneously, the system is flagged for review. The trader must manually evaluate whether to continue, reduce size to minimum, or pause trading until retraining is complete.
+
+Critical constraint: Model retraining is never triggered automatically. A human must evaluate and approve every model update before deployment. This prevents the system from overfitting to recent unusual conditions.
+
+SECTION 12: BACKTESTING AND VALIDATION FRAMEWORK
+Walk-Forward Analysis Design
+Use a purged walk-forward validation design to prevent information leakage between training and test periods:
+
+For each fold:
+  Training period: 12 months of data
+  Purge gap: 5 trading days (eliminates autocorrelated observations)
+  Validation period: 3 months of data
+  Embargo period: 2 trading days at end of fold (eliminates look-forward bias)
+Run this across at least 8 folds (meaning the total dataset must be at least 4 years, ideally 5 years).
+
+Performance Metrics That Matter
+Expectancy: Average PnL per trade in dollar terms after costs. Target: positive, with a minimum of 1.5× the average commission per trade.
+
+Profit factor: Gross profit / Gross loss. Target: above 1.4 in out-of-sample validation. Below 1.2 in any 3-month period is concerning.
+
+Maximum drawdown (trade-level): Largest peak-to-trough drawdown in dollar terms. Must stay below 50% of the prop account drawdown limit in any validation period.
+
+Average adverse excursion (AAE): Average of the worst intraday drawdown per trade (maximum loss before hitting stop or target). If AAE approaches the stop loss size, the stop placement model is inefficient.
+
+Average favorable excursion (AFE): Average of the best intraday gain per trade. If AFE greatly exceeds target, targets are being set too conservatively.
+
+Regime-specific metrics: All metrics broken out by regime label. A model that performs well in trend days and poorly in range days is acceptable. A model that performs poorly in trend days is broken, because trend days should be the system's highest-confidence environment.
+
+PnL concentration: What percentage of total PnL comes from the best 10% of trades? If more than 60% of all PnL is concentrated in the top 10 trades, the system is fragile. It depends on rare outlier wins to survive.
+
+Performance after costs: Include $5 round-trip commission per micro contract trade as a minimum. MNQ spread is typically 0.25 points = $0.50 per contract. Total per-trade friction of $5.50 minimum should be built into all performance metrics.
+
+Stability score: Compute rolling 20-trade profit factor. Plot its distribution. A stable system has this distribution centered around 1.4–1.8 with moderate variance. An overfit system shows extreme variance with occasional high values that mask many poor periods.
+
+Deciding Whether the Model Is Truly Robust
+The model is considered robust if it meets all of the following criteria:
+
+Out-of-sample profit factor above 1.3 in at least 6 of the 8 walk-forward folds
+Out-of-sample profit factor above 1.0 in all 8 folds (no fold is a net loser)
+Maximum drawdown in no fold exceeds 60% of the prop account drawdown limit
+Regime-specific win rates are explainable and consistent with prior on market behavior
+Feature importance is stable across folds (same 10 features remain consistently important)
+Performance does not systematically degrade in later folds (would indicate overfitting to older data)
+Monte Carlo simulation (1,000 random trade orderings) shows 5th percentile outcome is not a drawdown breach
+SECTION 13: FAILURE MODES AND SAFETY CONTROLS
+Failure Mode 1: Overfitting to In-Sample Data
+Cause: Model learns patterns that are specific to the training period but do not generalize. Most common when: too many features are used, training period is too short, or walk-forward validation is not properly purged.
+
+Danger level: Catastrophic. The model will appear to work perfectly in backtest and fail in live trading.
+
+Mitigation: Use walk-forward validation with purge gaps. Limit model complexity (max tree depth in XGBoost: 4–6). Monitor feature importance across folds. Require feature importance stability.
+
+Kill switch: If live trading profit factor drops below 1.0 on a rolling 30-trade basis, pause and retrain.
+
+Failure Mode 2: Reacting Too Quickly to Noise (Overfitting to Recent Data)
+Cause: Online adaptation or very frequent retraining causes the model to adjust to the last few days of data, which may be unrepresentative of the true regime.
+
+Danger level: High. The model may whipsaw between policies, trade high-volatility events incorrectly, or oversize based on a recent run of good luck.
+
+Mitigation: No online learning. Minimum retraining cycle is monthly. Regime labels are sticky (require 15 minutes of sustained evidence).
+
+Kill switch: If regime label changes more than 4 times in a single session, force no-trade mode for the remainder of that session.
+
+Failure Mode 3: Reacting Too Slowly to Real Regime Change
+Cause: Stickiness mechanisms prevent the system from adapting when the market genuinely shifts to a new regime that differs from anything in the training set.
+
+Danger level: Moderate. The system will continue trading the wrong policy, generating losses until the regime threshold is eventually crossed.
+
+Mitigation: Anomaly detection layer flags out-of-distribution conditions. Maximum consecutive loss count (3) forces a pause regardless of regime confidence.
+
+Kill switch: 3 consecutive losses in any session triggers position size reduction to minimum and a 30-minute trading halt.
+
+Failure Mode 4: News Shock Gap
+Cause: A major unscheduled event (geopolitical shock, surprise Fed statement, market circuit breaker) causes a gap that exceeds stop loss distance before orders can execute.
+
+Danger level: High, but manageable with micro contracts. A 50-point gap in NQ on a full NQ position is catastrophic. A 50-point gap on a single MNQ position is a $100 loss.
+
+Mitigation: This is the primary reason for using micro contracts exclusively on small accounts. No overnight positions. Daily session close forces flat.
+
+Kill switch: No position held outside of defined trading hours. NT8 close-on-session-end is a hard rule.
+
+Failure Mode 5: Data Feed Issues
+Cause: NT8 data feed becomes stale, delayed, or incorrect. Model computes features on incorrect data and generates bad signals.
+
+Danger level: High if undetected.
+
+Mitigation: NT8 strategy should monitor for stale data (no new bars within expected time frame). If data is stale for more than 60 seconds during market hours, execute a flat-all-positions command and disable new entries until feed is verified.
+
+Kill switch: Implement a bar-arrival watchdog in NT8 that triggers an emergency flatten if no new bar arrives within 90 seconds during RTH.
+
+Failure Mode 6: False Confidence During Unusual Conditions
+Cause: The model has never seen conditions like today (e.g., a flash crash, a major geopolitical event, a liquidity crisis). Its feature inputs are within normal range by coincidence, but the market structure is completely different. It outputs high confidence on a signal that will be disastrously wrong.
+
+Danger level: High.
+
+Mitigation: Anomaly detection (isolation forest on feature vector) checks whether the current observation is within the training distribution. If it is not, force no-trade mode regardless of model output.
+
+Kill switch: If ATR ratio exceeds 3.0 (current ATR is triple the 20-day average), all trading halts immediately regardless of model state.
+
+Failure Mode 7: Policy Switching Chaos
+Cause: The regime classifier oscillates between two regime states rapidly, causing the policy engine to switch behavior back and forth, generating transaction costs without edge.
+
+Danger level: Moderate.
+
+Mitigation: 15-minute hysteresis on regime switching. Maximum of 2 policy changes allowed per session before forcing no-trade mode.
+
+Kill switch: Count policy changes per session. If this count exceeds 2, set no-trade mode for the remainder of the session.
+
+Failure Mode 8: Model Confidence as Excuse for Oversizing
+Cause: Trader modifies the risk engine to allow larger positions when the model shows high confidence, reasoning that the model "is right." The model is wrong on a high-confidence signal, producing a large loss.
+
+Danger level: Catastrophic.
+
+Mitigation: Hard cap on maximum contracts regardless of confidence. The maximum is 2 micro contracts. This is not a soft limit. It is coded in NT8 as an absolute maximum and is not a parameter that can be changed without full system review.
+
+SECTION 14: NINJATRADER 8 IMPLEMENTATION DESIGN
+Architecture Split: What Lives Where
+Inside NT8
+All order management and execution logic
+Risk engine (position size limits, daily loss limits, consecutive loss tracking, forced flats)
+Feature computation for real-time price features (VWAP, EMA, ATR, relative volume, bar patterns)
+State file reader (reads Python model output every bar)
+Bar-arrival watchdog
+Session-end flatten logic
+Trade logging to file
+Event flag reader (reads pre-session event calendar file)
+Inside Python (External Service)
+All ML model inference (XGBoost regime classifier, LightGBM signal scorer)
+Feature computation for computationally expensive features
+Anomaly detection evaluation
+Economic calendar parsing and event state computation
+State file writer (writes model output every 5 minutes)
+Nightly monitoring and drift detection
+Offline training pipeline
+Communication Protocol
+The simplest and most reliable communication method between Python and NT8 is a JSON state file written to a local disk path that NT8 reads at each bar close.
+
+json
+{
+  "timestamp": "2024-11-15T10:35:00",
+  "regime_label": 0,
+  "regime_confidence": 0.72,
+  "setup_quality_score": 0.68,
+  "long_expectancy_score": 0.61,
+  "short_expectancy_score": 0.23,
+  "no_trade_score": 0.31,
+  "signal_confidence": 0.70,
+  "risk_multiplier": 1.0,
+  "anomaly_flag": 0,
+  "event_risk_flag": 1,
+  "policy_recommendation": "MOMENTUM_CONTINUATION",
+  "bias": "LONG",
+  "model_version": "v1.3.2",
+  "model_timestamp": "2024-11-10"
+}
+NT8 reads this file on each 5-minute bar close, validates the timestamp (if the file is more than 10 minutes old, it is considered stale), and uses the values to evaluate the current policy.
+
+Latency consideration: For day trading on 5-minute bars, a 5-minute update cycle is more than sufficient. The system is not high-frequency. The intelligence update latency is irrelevant because no signal requires sub-second execution.
+
+Failover Behavior
+If NT8 reads the state file and finds it is stale (older than 10 minutes), or if the file is missing or malformed, the strategy immediately enters a failsafe state:
+
+Failsafe state:
+- No new entries allowed
+- Existing positions: hold until stop or target is hit, then no new entries
+- Alert sent to trader via email/SMS (NT8 supports this natively)
+- Log entry written with failsafe reason
+The system does not attempt to trade on a model output that it cannot verify as current. This is the correct behavior.
+
+Feature Generation Split
+Features computed in NT8 (bar-by-bar, fast):
+
+VWAP and distance from VWAP
+EMA values (8, 21, 50)
+ATR(14) current
+Relative volume (requires historical volume average — load from file at session start)
+Bar characteristics (range, wick ratio, close position in range)
+Current session high/low
+Time-based features (minutes since open, time bucket)
+Prior day high/low (loaded from file at session start)
+Features computed in Python (every 5 minutes, pushed to state file):
+
+Efficiency ratio (requires iterative computation)
+ATR ratio and ATR z-score vs 20-day average
+Return autocorrelation (rolling 10-bar)
+Failed breakout count (session-level)
+Session context features (from prior session database)
+Opening range features (computed once at 10:00 AM)
+Anomaly score (isolation forest on full feature vector)
+NT8 Platform Limitations and How to Handle Them
+NT8 has no built-in ML inference. This is actually fine for this architecture. All ML inference happens in Python. NT8 is the executor, not the intelligence.
+
+NT8 strategies must be compiled C#. The strategy code will be more verbose than Python but is manageable. The key is keeping the NT8 code simple: read state file, apply risk engine, execute orders. The intelligence is entirely in the state file content.
+
+NT8 Ninscript has limited file I/O. Use System.IO.File.ReadAllText() to read the JSON state file. Use Newtonsoft.Json (available in NT8) or simple string parsing to extract values. Update this read at each OnBarUpdate() call on the 5-minute series.
+
+NT8 does not support real-time Python execution natively. Run the Python model server as a separate Windows background process or Windows Service that starts with the computer and writes the state file on a timer. Use Python's schedule library for timing.
+
+SECTION 15: STEP-BY-STEP BUILD PLAN
+Phase 1: Data Infrastructure and Regime Labeling (Weeks 1–4)
+Deliverables:
+
+Historical 1-minute and daily OHLCV database for MNQ, MES, MGC, MCL going back 3–5 years
+Economic calendar historical database
+Session segmentation tool (identifies RTH start/end, overnight range, opening range)
+Manual regime labeling of 200+ historical days as ground truth for classifier training
+Python environment with XGBoost, LightGBM, pandas, numpy, scikit-learn installed
+Success criteria: Clean, complete dataset with no gaps during RTH. Regime labels cross-validated by manual inspection on 20 randomly sampled days.
+
+Do not proceed until: Dataset is clean and labels are verified.
+
+Phase 2: Feature Engineering and Regime Classifier (Weeks 5–8)
+Deliverables:
+
+Complete feature engineering pipeline in Python
+XGBoost regime classifier trained and walk-forward validated
+Regime distribution analysis (how often does each regime occur?)
+Feature importance analysis
+Confusion matrix and classification report for regime classifier
+Success criteria: Regime classifier achieves above 70% accuracy on out-of-sample validation folds. Feature importance is stable across folds (same top 10 features appear consistently). Walk-forward profit factor of the classifier's regime calls is positive (correct regime identification leads to better strategy performance).
+
+Do not proceed until: Regime classifier is validated across all 8 walk-forward folds.
+
+Phase 3: Specialist Policy Design and Signal Scoring (Weeks 9–14)
+Deliverables:
+
+Rule-based specialist strategies for each regime (Policies 1–6) designed and backtested
+LightGBM signal quality scorer (meta-label model) trained per regime
+Signal stack output format defined and implemented
+Per-regime performance metrics (win rate, profit factor, expectancy) in out-of-sample testing
+Success criteria: Each specialist strategy performs positively in its target regime in out-of-sample testing. Overall walk-forward profit factor above 1.3.
+
+Do not proceed until: All 6 policies have defined entry, exit, and deactivation rules. Signal scorer is calibrated (predicted probabilities match empirical win rates).
+
+Phase 4: Risk Engine and Policy Selector Implementation (Weeks 15–18)
+Deliverables:
+
+Complete risk engine implemented in Python (for testing) and NT8 (for execution)
+Policy selector with hysteresis implemented
+Full system simulation in Python with all components integrated
+Anomaly detection layer implemented
+Event calendar integration tested
+Success criteria: System simulation produces results consistent with Phase 3 individual component testing. Risk engine correctly rejects all trades that would exceed daily or per-trade limits. Anomaly detection correctly flags the 5 most unusual historical days in the dataset.
+
+Do not proceed until: End-to-end simulation runs without errors on all historical data. Risk engine is validated.
+
+Phase 5: NT8 Integration and Paper Trading (Weeks 19–24)
+Deliverables:
+
+NT8 strategy code that reads Python state file and executes trades
+Python model server running as background service
+Logging system for all trades and model states
+Paper trading on NT8 Sim account for minimum 4 weeks
+Post-paper-trading performance analysis
+Success criteria: Paper trading profit factor above 1.2 over 4 weeks. No risk engine breaches. No data feed issues. System behaves consistently with historical simulation.
+
+Do not proceed until: 4 weeks of clean paper trading with logs reviewed and anomalies explained.
+
+Phase 6: Micro-Contract Live Testing (Weeks 25–32)
+Deliverables:
+
+Live trading on 1 MNQ and 1 MES with maximum $40 per trade risk
+Weekly performance review logs
+Comparison of live vs. paper vs. backtest performance
+Success criteria: Live profit factor within reasonable range of paper trading results. No day where loss exceeds $100. No risk engine failures. Model behavior consistent with expectations.
+
+Do not proceed until: 8 weeks of live micro trading with stable results.
+
+Phase 7: Prop Account Deployment Evaluation (Weeks 33–40)
+Deliverables:
+
+Full system review and possible retraining on expanded dataset
+Stress test against recent market conditions
+Prop account risk parameter configuration
+Formal decision: deploy to prop or continue micro-contract trading
+Success criteria: 8 weeks of live micro performance meets all risk and performance criteria. System has not required any manual overrides. Retraining validation passes all Phase 2–3 criteria.
+
+SECTION 16: FINAL RECOMMENDED DESIGN
+Exact Recommended Architecture
+Name: Regime-Gated Adaptive Futures Trading System (RAFTS)
+
+Core principle: Identify what type of market it is before deciding whether and how to trade.
+
+Exact Model Architecture
+[Regime Classifier] → XGBoost (depth 5, 200 trees, L1/L2 regularized)
+  Input: 28 features (see Section 17D)
+  Output: probability distribution across 10 regime classes
+  Update: every 5-minute bar close
+  Stickiness: 15-minute hysteresis on regime switching
+
+[Signal Scorer] → LightGBM (depth 4, 150 trees, trained per regime)
+  Input: 18 signal features + regime label + regime confidence
+  Output: long_score, short_score, no_trade_score (sum to 1.0)
+  Update: every 5-minute bar close
+
+[Anomaly Detector] → Isolation Forest (100 trees, contamination 0.05)
+  Input: full 28-feature vector
+  Output: binary anomaly flag
+  Update: every 5-minute bar close
+
+[Policy Engine] → Rule-based threshold table (no ML)
+  Input: regime label, confidence, signal scores, anomaly flag, event flag
+  Output: active policy, trade direction, size modifier
+  Update: every bar close
+
+[Risk Engine] → Rule-based hard limits (no ML)
+  Input: current PnL, position count, consecutive losses, time, volatility
+  Output: approve/reject/modify trade instruction
+  Update: per trade and per bar
+Exact Data Inputs
+5-minute OHLCV for current session (all bars since RTH open)
+Daily OHLCV for last 5 sessions
+Overnight session high/low/open/close
+Pre-session economic calendar (event tier, time, expected/prior values)
+Relative volume baseline (20-day average volume by time of day, loaded at session open)
+Prior day regime label (from previous session's classifier output)
+Exact Regime Engine
+10-class XGBoost classifier as defined in Section 4. Trained on 3 years of labeled daily session data. Regime label is sticky (requires 15 minutes of sustained evidence to change). Confidence threshold of 0.55 required to activate any trading policy. Confidence below 0.40 forces no-trade mode.
+
+Exact Signal Design
+Signal vector as defined in Section 7. Meta-label approach: separate LightGBM signal scorers trained per regime. Target label: trade outcome within standardized risk/reward (1.5R stop, 2.0R target, 20-bar window). Signal confidence = geometric mean of regime confidence and setup quality score.
+
+Exact Policy Engine
+6 policies as defined in Section 8. Hard switching with 15-minute hysteresis. Maximum 2 policy switches per session. Policy 6 (no-trade) is the default when confidence is insufficient.
+
+Exact Risk Engine
+Per-trade maximum: $40 (2% of $2,000 drawdown limit). Daily maximum: $160 (8%). Maximum contracts: 2 micro per trade. Maximum trades per day: 6. Consecutive loss pause: 3 losses → 30-minute halt + 50% size reduction. ATR ratio > 3.0 → immediate trading halt. Position close before session end: hard rule.
+
+Exact Retraining/Update Cadence
+Nightly: log processing, drift metric computation.
+Weekly: performance review, manual assessment.
+Monthly: retrain with new month of data added, validate before deploying.
+Trigger: human review required before any model deployment.
+
+Start With
+Instrument: MNQ and MES exclusively. These are the most liquid micro contracts with the tightest spreads and most predictable intraday behavior. Regime focus: Start with just Regime 0 (Trend Bull), Regime 1 (Trend Bear), and Regime 2 (Range/Chop). These three regimes cover the majority of trading days and provide the clearest behavioral differentiation. Policy focus: Start with only Policy 1 (Momentum Continuation) and Policy 6 (No-Trade). Add other policies one at a time after the first two are validated live.
+
+Avoid Initially
+GC/MGC and CL/MCL: More volatile, more news-driven, higher overnight risk, less predictable intraday structure for beginners to the system. Add these in Version 2 after MNQ/MES are stable.
+
+Full-size contracts NQ, ES, GC, CL: Permanently forbidden on accounts with a $2,000 drawdown limit.
+
+SECTION 17: CODE-READY OUTPUT FORMAT
+A. Concise System Blueprint
+RAFTS v1.0 - Regime-Adaptive Futures Trading System
+
+Architecture: Hierarchical Regime-Gated with Specialist Policies
+Primary models: XGBoost (regime), LightGBM (signal), Isolation Forest (anomaly)
+Policy engine: Rule-based (6 policies)
+Risk engine: Rule-based hard limits (independent of ML)
+Communication: Python → JSON state file → NT8 strategy
+Update cycle: 5-minute bars
+Instruments: MNQ, MES (Phase 1); MGC, MCL (Phase 2)
+Max risk: $40/trade, $160/day, 2 contracts max
+Training: Monthly offline retraining, human approval required
+B. Component Diagram in Words
+[Economic Calendar API]
+        ↓ daily pre-session
+[Python Pre-Session Processor]
+        ↓ writes event_flags.json
+        
+[NT8 Data Feed (live bars)]
+        ↓ 1-min and 5-min OHLCV
+[NT8 Internal Feature Calculator]
+        ↓ fast features computed in NT8
+[Python Feature Aggregator] ← reads NT8 log OR uses own data feed
+        ↓ computes slow features
+[XGBoost Regime Classifier]
+        ↓ regime_label + confidence
+[Isolation Forest Anomaly Detector]
+        ↓ anomaly_flag
+[LightGBM Signal Scorer (regime-specific)]
+        ↓ long/short/no_trade scores + confidence
+[state.json file written to local disk]
+        ↓ NT8 reads on each 5-min bar close
+[NT8 Policy Engine (rule-based)]
+        ↓ trade direction + policy label
+[NT8 Risk Engine (hard limits)]
+        ↓ approve / reject / modify
+[NT8 Execution Layer]
+        ↓ orders submitted to broker
+[NT8 Trade Logger]
+        ↓ writes to trade_log.csv
+[Python Monitoring (nightly)]
+        ↑ reads trade_log.csv
+        ↑ drift metrics, performance metrics
+        ↑ flags if retraining needed
+C. Required Data Fields
+OHLCV fields (5-min bars):
+  open, high, low, close, volume
+  bar_timestamp, instrument_symbol, session_date
+
+Daily session fields:
+  session_date, rtH_open, rth_close, rth_high, rth_low
+  overnight_high, overnight_low, overnight_open, overnight_close
+  session_volume, session_vwap
+
+Economic calendar fields:
+  event_date, event_time_eastern, event_name, event_tier (1/2/3)
+  expected_value, prior_value, actual_value (post-release)
+
+Rolling baseline fields (loaded at session open):
+  avg_volume_by_time[96] (each 5-min bucket of RTH)
+  avg_atr_14_20day
+  avg_overnight_range_20day
+  prior_session_regime_label
+
+Live session state fields:
+  current_session_vwap
+  current_session_high, current_session_low
+  opening_range_high, opening_range_low (locked at 10:00 AM)
+  current_atr_14
+  relative_volume_current
+  session_minutes_elapsed
+D. Engineered Feature List
+VOLATILITY FEATURES (5 features):
+  F01: atr_ratio_5min          - ATR(14) 5min / 20-day avg ATR(14) 5min
+  F02: atr_accel_5min          - Rate of change of ATR(14) over last 6 bars
+  F03: realized_vol_session    - Std dev of 5-min returns since open (annualized)
+  F04: vol_compression_count   - Consecutive bars with range < 0.6 ATR
+  F05: overnight_rtH_vol_ratio - Overnight range / avg overnight range
+
+TREND/DIRECTION FEATURES (6 features):
+  F06: efficiency_ratio_20     - Kaufman Efficiency Ratio, 20-bar
+  F07: vwap_distance_atr       - (price - VWAP) / ATR(14), signed
+  F08: trend_slope_12          - OLS slope of closes, 12 bars, normalized by ATR
+  F09: hh_hl_count_15          - Count of HH formations - LL formations, 15 bars
+  F10: return_autocorr_10      - Autocorrelation of 5-min returns, lag 1, 10-bar window
+  F11: bar_direction_streak    - Consecutive bars closing in same direction
+
+OPENING RANGE FEATURES (4 features):
+  F12: opening_range_size_atr  - (OR_high - OR_low) / ATR(14)
+  F13: price_vs_or             - (price - OR_low) / (OR_high - OR_low)
+  F14: or_break_time_mins      - Minutes from open to first OR breach (999 if not broken)
+  F15: opening_drive_atr       - Absolute 15-min move from open / ATR(14)
+
+VOLUME FEATURES (4 features):
+  F16: relative_volume         - Session vol through now / avg vol at same time, 20d
+  F17: volume_accel            - Rate of change of per-bar volume, last 6 bars
+  F18: vwap_vol_skew           - (vol above VWAP - vol below VWAP) / total vol
+  F19: vol_per_point           - Session volume / session range in points
+
+STRUCTURE FEATURES (4 features):
+  F20: pdH_distance_atr        - (price - prior_day_high) / ATR(14)
+  F21: pdL_distance_atr        - (price - prior_day_low) / ATR(14)
+  F22: failed_breakout_count   - Count of break-and-reverse events this session
+  F23: range_pct_elapsed_atr   - Session range / ATR(14) / (session_minutes / 390)
+
+TIME FEATURES (3 features):
+  F24: minutes_since_open      - Raw integer
+  F25: time_sin                - sin(2π × minutes_since_open / 390)
+  F26: time_cos                - cos(2π × minutes_since_open / 390)
+
+EVENT/NEWS FEATURES (2 features):
+  F27: event_risk_flag         - 0/1/2/3/4 as defined in Section 6
+  F28: prior_day_regime        - Integer 0-9 from prior session classifier output
+E. Regime Classes
+R0: TREND_BULL          - Strong upward directional day
+R1: TREND_BEAR          - Strong downward directional day
+R2: RANGE_CHOP          - Oscillating, no net direction
+R3: BREAKOUT_DAY        - Compression-to-expansion with volume
+R4: MEAN_REVERSION      - Overextension-to-VWAP cycles
+R5: HIGH_VOL_DISTORTED  - Elevated ATR, news-driven, irregular
+R6: LOW_VOL_COMPRESS    - Tight range, very low ATR, waiting
+R7: OPEN_DRIVE_CONT     - Opening drive persisting into midday
+R8: OPEN_DRIVE_FAIL     - Opening drive reversing within 90 min
+R9: LATE_EXPANSION      - Directional move in final 90 minutes
+F. Model Outputs
+From Regime Classifier (XGBoost):
+  regime_label: int (0–9)
+  regime_confidence: float (0.0–1.0)
+  regime_probabilities: float[10] (probability for each class)
+
+From Signal Scorer (LightGBM, per-regime):
+  setup_quality_score: float (0.0–1.0)
+  long_expectancy_score: float (0.0–1.0)
+  short_expectancy_score: float (0.0–1.0)
+  no_trade_score: float (0.0–1.0)
+  expected_excursion_long_atr: float
+  expected_excursion_short_atr: float
+
+Derived outputs:
+  signal_confidence: float = sqrt(regime_confidence × setup_quality_score)
+  risk_multiplier: float (0.5 / 0.75 / 1.0 / 1.25 / 1.5)
+
+From Anomaly Detector:
+  anomaly_flag: int (0 or 1)
+  anomaly_score: float (raw isolation forest score)
+G. Policy Decision Table
+REGIME        | CONFIDENCE | EVENT_FLAG | ANOMALY | → POLICY
+---------------------------------------------------------------------------
+R0/R7         | > 0.65     | 0–2        | 0       | → MOMENTUM_CONTINUATION
+R0/R7         | 0.55–0.65  | 0–2        | 0       | → PULLBACK_TO_STRUCTURE
+R1             | > 0.65     | 0–2        | 0       | → MOMENTUM_CONTINUATION (short)
+R3             | > 0.65     | 0–1        | 0       | → BREAKOUT_CONFIRMATION
+R3 + failed   | > 0.60     | 0–1        | 0       | → FAILED_BREAKOUT_REVERSAL
+R2/R4/R8      | > 0.60     | 0–2        | 0       | → MEAN_REVERSION_VWAP
+ANY           | < 0.55     | ANY        | ANY     | → NO_TRADE
+ANY           | ANY        | 3–4        | ANY     | → NO_TRADE
+ANY           | ANY        | ANY        | 1       | → NO_TRADE
+ANY           | ANY        | ANY        | ANY     | → NO_TRADE (first 30 min of session)
+R5/R6/R9      | ANY        | ANY        | ANY     | → NO_TRADE (pending reclassification)
+H. Risk Control Table
+CONDITION                          | EFFECT ON TRADING
+--------------------------------------------------------------------
+signal_confidence < 0.55           | No new entries
+signal_confidence 0.55–0.75        | 1 micro contract max
+signal_confidence > 0.75           | 2 micro contracts max
+daily_loss > 25% of $160 limit     | 50% size reduction
+daily_loss > 50% of $160 limit     | 75% size reduction, no breakout policy
+daily_loss > 75% of $160 limit     | All trading halted for day
+consecutive_losses ≥ 3             | 30-min halt, then 50% size for session
+atr_ratio > 2.0                    | Widen stops proportionally
+atr_ratio > 3.0                    | All trading halted immediately
+event_risk_flag = 3                | 1 contract max, no breakout policy
+event_risk_flag = 4 (FOMC)         | Halt 1:45–2:30 PM Eastern
+minutes_until_close < 30           | No new entries
+state_file_age > 10 minutes        | No new entries (failsafe)
+anomaly_flag = 1                   | No new entries
+policy_switches_today > 2          | No-trade for remainder of session
+NQ, ES, GC, CL (full contracts)   | PERMANENTLY FORBIDDEN
+I. Retraining and Update Schedule
+DAILY (automated, 5:00 PM Eastern):
+  - Process trade log from session
+  - Compute daily performance metrics
+  - Compute feature drift scores (PSI) for all 28 features
+  - Update rolling performance database
+  - Write monitoring report to disk
+
+WEEKLY (manual review, Monday 8:00 AM):
+  - Review 5-session performance vs. expected benchmarks
+  - Review feature drift scores (flag if PSI > 0.25 on any feature)
+  - Review regime distribution (flag if regime frequency has shifted significantly)
+  - Review any days where anomaly flag was triggered (were they correctly handled?)
+  - Decision: continue / reduce size / pause for investigation
+
+MONTHLY (offline retraining cycle):
+  - Add 1 month of new labeled data to training set
+  - Retrain regime classifier with walk-forward validation
+  - Retrain signal scorers per regime
+  - Retrain anomaly detector
+  - Run full validation suite (Section 12 criteria)
+  - Paper trade for 5 sessions with new model
+  - If validation passes: deploy to production
+  - If validation fails: investigate, do not deploy
+
+MODEL DEPLOYMENT RULE:
+  - No automated deployment
+  - All deployments require manual sign-off
+  - New model must beat previous model on last 3 months of OOS data
+  - Rollback procedure: keep previous model weights, restore in < 5 minutes
+J. Pseudocode for Full System
+python
+# ============================================================
+# RAFTS - Pseudocode for Full System (Python Model Server)
+# ============================================================
+
+# --- Pre-Session Initialization (runs at 9:00 AM Eastern) ---
+def pre_session_init(session_date):
+    calendar_events = load_economic_calendar(session_date)
+    event_risk_flag = compute_event_risk_flag(calendar_events)
+    
+    prior_session_data = load_prior_session(session_date - 1_business_day)
+    prior_regime = load_prior_regime_label(session_date - 1_business_day)
+    
+    volume_baseline = load_volume_baseline(last_20_sessions)
+    atr_baseline = load_atr_baseline(last_20_sessions)
+    overnight_data = load_overnight_session(session_date)
+    
+    session_context = {
+        "event_risk_flag": event_risk_flag,
+        "calendar_events": calendar_events,
+        "prior_regime": prior_regime,
+        "volume_baseline": volume_baseline,
+        "atr_baseline": atr_baseline,
+        "overnight_range": overnight_data.high - overnight_data.low,
+        "overnight_gap": calculate_gap(overnight_data, prior_session_data)
+    }
+    
+    write_session_context_file(session_context)
+    return session_context
+
+
+# --- Bar Update Loop (runs every 5 minutes during RTH) ---
+def on_bar_update(current_bars, session_context):
+    
+    # Step 1: Compute features
+    features = compute_feature_vector(current_bars, session_context)
+    # Returns dict of all 28 features (F01–F28)
+    
+    # Step 2: Check anomaly
+    anomaly_flag = anomaly_detector.predict(features)
+    anomaly_score = anomaly_detector.score(features)
+    
+    # Step 3: Classify regime
+    regime_probs = regime_classifier.predict_proba(features)
+    regime_label = argmax(regime_probs)
+    regime_confidence = regime_probs[regime_label]
+    
+    # Apply stickiness (hysteresis)
+    active_regime, regime_confirmed = apply_regime_hysteresis(
+        current_regime=active_regime,
+        new_regime=regime_label,
+        new_confidence=regime_confidence,
+        minutes_in_current_regime=regime_timer
+    )
+    
+    # Step 4: Score signals (only if regime is confirmed and not anomalous)
+    if anomaly_flag == 0 and regime_confidence >= 0.55:
+        scorer = get_regime_scorer(active_regime)
+        signal_scores = scorer.predict(features + [active_regime, regime_confidence])
+        long_score = signal_scores["long"]
+        short_score = signal_scores["short"]
+        no_trade_score = signal_scores["no_trade"]
+        setup_quality = max(long_score, short_score)
+        signal_confidence = sqrt(regime_confidence * setup_quality)
+    else:
+        long_score = 0.0
+        short_score = 0.0
+        no_trade_score = 1.0
+        signal_confidence = 0.0
+    
+    # Step 5: Compute risk multiplier
+    risk_multiplier = compute_risk_multiplier(signal_confidence)
+    
+    # Step 6: Determine directional bias
+    if long_score > short_score and long_score > no_trade_score:
+        bias = "LONG"
+    elif short_score > long_score and short_score > no_trade_score:
+        bias = "SHORT"
+    else:
+        bias = "NONE"
+    
+    # Step 7: Apply event risk override
+    event_override = apply_event_override(
+        session_context["event_risk_flag"],
+        session_context["calendar_events"],
+        current_time
+    )
+    if event_override["force_no_trade"]:
+        signal_confidence = 0.0
+        bias = "NONE"
+    
+    # Step 8: Determine policy recommendation
+    policy = select_policy(
+        regime=active_regime,
+        confidence=regime_confidence,
+        signal_confidence=signal_confidence,
+        anomaly_flag=anomaly_flag,
+        event_risk_flag=session_context["event_risk_flag"],
+        bias=bias
+    )
+    
+    # Step 9: Write state file
+    state = {
+        "timestamp": current_time.isoformat(),
+        "regime_label": active_regime,
+        "regime_confidence": float(regime_confidence),
+        "setup_quality_score": float(setup_quality),
+        "long_expectancy_score": float(long_score),
+        "short_expectancy_score": float(short_score),
+        "no_trade_score": float(no_trade_score),
+        "signal_confidence": float(signal_confidence),
+        "risk_multiplier": float(risk_multiplier),
+        "anomaly_flag": int(anomaly_flag),
+        "anomaly_score": float(anomaly_score),
+        "event_risk_flag": int(session_context["event_risk_flag"]),
+        "policy_recommendation": policy,
+        "bias": bias,
+        "model_version": MODEL_VERSION,
+        "model_timestamp": MODEL_TRAIN_DATE
+    }
+    
+    write_state_file(STATE_FILE_PATH, state)
+    log_state(state)
+    return state
+
+
+# ============================================================
+# NT8 Strategy Core (C# pseudocode representation)
+# ============================================================
+
+# OnBarUpdate() called at every 5-min bar close:
+def OnBarUpdate():
+    
+    # Read Python state file
+    state = read_state_file(STATE_FILE_PATH)
+    
+    # Validate freshness
+    if state.timestamp_age_minutes > 10:
+        enter_failsafe_mode()
+        return
+    
+    # Apply risk engine (independent of ML output)
+    risk_status = evaluate_risk_engine(
+        current_daily_pnl=daily_pnl,
+        consecutive_losses=loss_streak,
+        current_atr_ratio=current_atr / baseline_atr,
+        time_until_close=minutes_until_close,
+        position_count=open_positions
+    )
+    
+    if risk_status.halt_trading:
+        return
+    
+    # Determine allowed position size
+    allowed_contracts = min(
+        risk_status.allowed_contracts,
+        state.risk_multiplier_to_contracts(state.risk_multiplier)
+    )
+    
+    if allowed_contracts == 0:
+        return
+    
+    # Check if we should enter
+    if state.signal_confidence < 0.55:
+        return
+    
+    if state.no_trade_score > max(state.long_expectancy_score, state.short_expectancy_score):
+        return
+    
+    # Determine entry direction
+    direction = state.bias  # "LONG" or "SHORT"
+    
+    if direction == "NONE":
+        return
+    
+    # Compute stop and target
+    atr = current_atr_14  # computed in NT8
+    stop_distance = 1.5 * atr
+    target_distance = 2.0 * atr
+    
+    # Scale stop by ATR ratio to handle high volatility
+    atr_ratio = current_atr / baseline_atr
+    if atr_ratio > 2.0:
+        stop_distance = stop_distance * atr_ratio
+    
+    # Submit entry order
+    if direction == "LONG" and no_open_position:
+        enter_long(contracts=allowed_contracts, stop=stop_distance, target=target_distance)
+    elif direction == "SHORT" and no_open_position:
+        enter_short(contracts=allowed_contracts, stop=stop_distance, target=target_distance)
+    
+    log_trade_entry(state, direction, allowed_contracts, stop_distance, target_distance)
+
+
+# OnSessionEnd():
+def OnSessionEnd():
+    if open_positions > 0:
+        flatten_all_positions()
+        log_forced_flatten("session_end")
+
+
+# Nightly monitoring (Python):
+def nightly_monitor():
+    trades = load_trade_log(last_30_days)
+    
+    performance = compute_performance_metrics(trades)
+    drift_scores = compute_feature_drift(current_features, training_features)
+    
+    if performance.rolling_profit_factor < 1.0:
+        send_alert("PERFORMANCE ALERT: Rolling profit factor below 1.0")
+    
+    if any(drift_score > 0.25 for drift_score in drift_scores.values()):
+        send_alert("FEATURE DRIFT ALERT: Review feature distributions")
+    
+    write_monitoring_report(performance, drift_scores)
+K. Project File Structure
+RAFTS/
+├── README.md
+├── requirements.txt
+│
+├── data/
+│   ├── raw/
+│   │   ├── mnq_1min/          # 1-minute OHLCV history
+│   │   ├── mes_1min/
+│   │   ├── mgc_1min/
+│   │   └── mcl_1min/
+│   ├── processed/
+│   │   ├── features/          # Computed feature sets per session
+│   │   ├── labels/            # Regime labels and trade outcome labels
+│   │   └── sessions/          # Session metadata files
+│   └── calendar/
+│       ├── historical_events.csv
+│       └── upcoming_events.csv
+│
+├── models/
+│   ├── regime_classifier/
+│   │   ├── model_v1.3.pkl
+│   │   ├── training_config.yaml
+│   │   └── validation_results.json
+│   ├── signal_scorers/
+│   │   ├── scorer_R0.pkl      # Regime-specific scorers
+│   │   ├── scorer_R1.pkl
+│   │   ├── scorer_R2.pkl
+│   │   └── ...
+│   └── anomaly_detector/
+│       └── isolation_forest_v1.pkl
+│
+├── src/
+│   ├── data_pipeline/
+│   │   ├── ingestion.py
+│   │   ├── session_processor.py
+│   │   └── calendar_parser.py
+│   ├── features/
+│   │   ├── feature_engineering.py
+│   │   ├── volatility_features.py
+│   │   ├── structure_features.py
+│   │   └── event_features.py
+│   ├── models/
+│   │   ├── regime_classifier.py
+│   │   ├── signal_scorer.py
+│   │   ├── anomaly_detector.py
+│   │   └── model_utils.py
+│   ├── policy/
+│   │   ├── policy_engine.py
+│   │   └── hysteresis.py
+│   ├── risk/
+│   │   └── risk_engine.py     # Also replicated in NT8 C#
+│   ├── server/
+│   │   ├── model_server.py    # Main process, writes state file
+│   │   └── state_writer.py
+│   └── monitoring/
+│       ├── performance_tracker.py
+│       ├── drift_detector.py
+│       └── nightly_report.py
+│
+├── training/
+│   ├── label_regimes.py
+│   ├── train_regime_classifier.py
+│   ├── train_signal_scorers.py
+│   ├── walk_forward_validation.py
+│   └── backtesting/
+│       ├── simulator.py
+│       └── metrics.py
+│
+├── ninjatrader/
+│   ├── RAFTS_Strategy.cs      # NT8 strategy file
+│   ├── RAFTS_RiskEngine.cs    # Risk engine (also in NT8 as helper)
+│   └── indicators/
+│       └── RAFTS_FeatureCalc.cs
+│
+├── config/
+│   ├── instruments.yaml       # Per-instrument risk parameters
+│   ├── regimes.yaml           # Regime definitions and thresholds
+│   ├── policies.yaml          # Policy activation criteria
+│   └── risk.yaml              # Risk limit configuration
+│
+├── logs/
+│   ├── trade_log.csv          # Written by NT8, read by Python monitoring
+│   ├── state_log.csv          # Python model state history
+│   └── monitoring_reports/
+│
+└── state/
+    └── model_state.json       # Live state file (Python writes, NT8 reads)
+L. Pre-Live Deployment Validation Checklist
+DATA VALIDATION:
+□ All 5 years of historical data loaded with no gaps during RTH
+□ Economic calendar data verified for completeness and accuracy
+□ Regime labels manually reviewed on random sample of 30 days
+□ Feature look-ahead bias audit: all 28 features verified as computable at bar close
+□ Feature distributions normal (no infinite values, no NaN, no extreme outliers)
+
+MODEL VALIDATION:
+□ Regime classifier: OOS accuracy > 70% on all 8 walk-forward folds
+□ Regime classifier: Feature importance stable (same top 10 across folds)
+□ Signal scorer: Calibration curve shows predicted probabilities match empirical win rates
+□ Signal scorer: Walk-forward profit factor > 1.3 in at least 6 of 8 folds
+□ Signal scorer: No fold produces profit factor below 1.0
+□ Anomaly detector: Correctly flags all historically identified unusual sessions (list of 10)
+□ All models produce identical output when re-run on same input (determinism verified)
+
+RISK ENGINE VALIDATION:
+□ Maximum contracts hard cap: verified that no combination of inputs produces > 2 contracts
+□ Daily loss limit: simulated breach correctly halts all trading
+□ Consecutive loss pause: simulated 3 consecutive losses correctly triggers 30-min halt
+□ ATR ratio > 3.0: simulated spike correctly halts all trading
+□ State file staleness: simulated stale file correctly prevents entries
+□ Session end flatten: verified all positions closed at 3:59 PM Eastern in simulation
+
+SYSTEM INTEGRATION VALIDATION:
+□ Python model server writes state file every 5 minutes without exception
+□ NT8 reads state file correctly and parses all fields
+□ NT8 enters failsafe mode when state file is stale or missing
+□ NT8 trade log writes correctly and can be read by Python monitoring
+□ Economic calendar events correctly set event_risk_flag in state file
+□ FOMC day playbook tested on historical FOMC dates
+
+PAPER TRADING VALIDATION (4 weeks minimum):
+□ Paper trading results within 20% of simulation results (adjusting for realized spread)
+□ No days where paper trading loss exceeded $160 simulation limit
+□ No anomaly flags incorrectly handled
+□ Policy engine switches logged and explainable (no unexplained policy changes)
+□ All 6 policies activated at least once during paper trading period
+□ No-trade mode correctly activated during event windows
+
+FINAL SIGN-OFF:
+□ All above items checked and documented
+□ Risk parameters reviewed by trader with full understanding
+□ Kill switch procedures tested and understood
+□ Rollback procedure tested (can restore previous model in < 5 minutes)
+□ Live trading begins with 1 MNQ contract maximum for first 2 weeks
+SECTION 18: IMPORTANT DESIGN CONSTRAINTS AND PRACTICALITY FILTER
+Self-Challenge: Where Is This Design Fragile?
+Fragility 1: The regime classifier is trained on manually labeled data. Human-labeled regimes will contain inconsistencies. The classifier's quality ceiling is limited by label quality. Mitigation: rigorous labeling protocol, cross-validation of labels, and using post-hoc objective metrics (daily range, ATR ratio, trend efficiency) to guide labels rather than pure subjective judgment.
+
+Fragility 2: The state file architecture is a single point of failure. If the Python process crashes, NT8 enters failsafe. This is the correct behavior, but it means missed trading opportunities. Mitigation: run Python as a Windows Service with automatic restart. Monitor with a watchdog that sends an SMS alert if the service stops.
+
+Fragility 3: The regime stickiness mechanism may miss fast regime transitions. A flash crash, for example, would not be classified correctly by the 15-minute hysteresis until it's too late. Mitigation: ATR ratio > 3.0 is an immediate halt that does not require regime reclassification. This catches the most dangerous scenarios.
+
+Fragility 4: The model is trained on limited regime examples. There may be only 50–80 instances of R3 (Breakout Day) or R4 (Mean Reversion Day) in 3 years of data. Classifiers trained on small class samples overfit. Mitigation: regularize heavily, use cross-instrument data (ES and NQ often share regime, so their combined data provides more examples), and consider merging similar regimes in Version 1.
+
+Where Is It Too Complex?
+The 10-regime taxonomy is ambitious. A retail trader building this system alone could spend 12 weeks just on regime labeling. In practice, the first version should use only 4 regime classes: Trend (up or down combined), Range/Chop, High Volatility/News, and No-Trade. This is still powerful and far more tractable.
+
+Where Is It Likely to Overfit?
+The signal scorers (meta-label models) trained per regime are the highest overfit risk. If Regime R3 has only 60 historical examples and the model has 28 features, the signal scorer will heavily overfit. Mitigation: use very high regularization (alpha=10, lambda=10 in XGBoost), limit maximum features per tree to 8, and validate rigorously with walk-forward folds that have sufficient examples per fold.
+
+Where Is It Unrealistic for NT8?
+The file-based communication is the most fragile component for a trader with limited systems administration experience. Running a Python service continuously on a Windows PC alongside NT8 requires care. Alternative: write the Python inference entirely as a scheduled task that runs before market open, computes a session-level "playbook" file with hourly or time-bucket recommendations, and NT8 reads this static playbook rather than a live updating file. This is less adaptive but much more reliable.
+
+Practicality Filter: Three Tiers of Implementation
+TIER 1: What Is Ideal in Theory
+Real-time tick data feeding a continuous feature computation engine
+10-class regime classifier with probabilistic outputs
+Per-regime signal scorers trained on thousands of labeled examples
+Anomaly detection with calibrated out-of-distribution scoring
+FOMC and CPI day playbooks validated on decades of data
+Live state file updated every 5 minutes with failover to secondary model
+Weekly retraining pipeline with automated drift detection
+TIER 2: What Is Realistic for a Retail/Prop Trader
+1-minute bar data (sufficient for all features)
+4-class simplified regime classifier (Trend/Range/HighVol/NoTrade) with XGBoost
+2 signal scorers (Trend regime and Range regime)
+Simple anomaly flag based on ATR ratio (ATR_ratio > 2.5 = anomaly)
+3 event tiers with simple behavioral rules (no NLP, no complex calendar parsing)
+State file updated every 5-minute bar close
+Monthly manual retraining
+TIER 3: What Should Be Built First (Minimum Viable Version)
+See MVP below.
+
+Minimum Viable Version (Version 1 - Build This First)
+The MVP is not a scaled-down version of the full system. It is a standalone, complete, working system that demonstrates the core concept: regime-aware, risk-controlled adaptive trading.
+
+What it contains:
+
+4-class manual regime classifier (Trend Bull / Trend Bear / Range / High Vol) based on simple objective rules, not ML
+2 behavioral policies (momentum and mean reversion)
+Hard-coded risk rules in NT8
+Pre-session event flag loaded from CSV file
+State file updated in Python every 5 minutes with just regime and bias
+Full risk engine in NT8
+What it does NOT contain: Any ML model. The regime classification in MVP is rule-based:
+
+IF atr_ratio > 1.5 AND event_flag >= 2: REGIME = HIGH_VOL, POLICY = NO_TRADE
+IF efficiency_ratio > 0.55 AND vwap_distance signed consistently above 0: REGIME = TREND_BULL
+IF efficiency_ratio > 0.55 AND vwap_distance signed consistently below 0: REGIME = TREND_BEAR
+ELSE: REGIME = RANGE
+This rule-based MVP gives you a working, testable, deployable system within 4–6 weeks. It respects regime. It respects risk. It provides the data needed to train the ML models later.
+
+MVP success criteria: 8 weeks of paper trading with profit factor above 1.2 and no daily loss limit breaches.
+
+Version 2 (Add ML Regime Classification)
+After MVP is proven in paper and micro-contract live trading:
+
+Replace rule-based regime classifier with trained XGBoost classifier
+Expand to 6 regime classes
+Add LightGBM signal scorer for Trend regime only
+Add anomaly detection (isolation forest)
+Add economic calendar API integration
+Keep risk engine unchanged from MVP
+Version 2 success criteria: Signal scorer improves profit factor by at least 0.1 versus MVP over 60-trade sample in live micro trading.
+
+Version 3 (Add Full Policy Engine and Scaling)
+After Version 2 is proven:
+
+Expand to all 10 regime classes
+Add all 6 policies
+Add per-regime signal scorers
+Explore meta-labeling with full 28-feature set
+Consider adding MGC (micro gold) and MCL (micro crude)
+Evaluate whether to increase maximum contracts from 2 to 3 based on 6-month performance data
+Consider LSTM-based time-series features as supplements to the tabular feature set
+Final Summary: The Most Important Principles
+This entire framework collapses to five principles that must never be compromised:
+
+One: Never trade when you do not know what kind of day it is. The regime must be confirmed before any signal is acted on.
+
+Two: Never risk more than 2% of your drawdown limit on a single trade. On a $2,000 prop account, that is $40. Every trade. Always.
+
+Three: The model does not override the risk engine. Ever. A 99% confidence score from the model does not unlock a larger position. The risk engine is not a suggestion.
+
+Four: Build incrementally and validate before advancing. Do not build Version 3 until Version 1 has 8 weeks of paper trading and 8 weeks of live micro trading results that are within expected ranges.
+
+Five: The goal of this system is to survive long enough to learn. A system that generates 8% per month with 5% drawdown and survives 12 months generates more real wealth than a system that generates 40% in one month and blows up the account. Build for survivability first. Performance follows naturally when the architecture is sound.
+
+This framework represents approximately 800–1,200 hours of implementation work for a single developer. The MVP can be built in 200–300 hours. Build the MVP. Trade the MVP. Learn from the MVP. Then build Version 2.
+
+Assume I want the external Python side to be able to run either as:
+1. a simple scheduled script during development, or
+2. a lightweight always-on local service later.
+Design V1 so I can start with option 1 and upgrade to option 2 without changing the NT8 interface.
+
+Apr 4
+
+Architected dual-mode Python design with shared core logic
+Architected dual-mode Python design with shared core logic
+This is exactly the right constraint to engineer around. The solution is a clean Engine/Runner split: the intelligence lives in a single StateEngine class with a run_once() method, and two thin runners wrap it — one for scheduled script mode, one for service mode. NT8 reads the same file either way and never knows which runner is active.
+
+Here is the complete MVP design with this dual-mode architecture baked in from day one.
+
+RAFTS MVP — COMPLETE BUILDABLE SPECIFICATION
+SECTION A — MVP SCOPE DECISION
+Locked-In Scope
+Included in V1:
+
+Single instrument: MNQ (Micro NQ futures only)
+Single primary timeframe: 5-minute bars in NT8
+Rule-based regime classifier (no ML in V1)
+3 regimes: Trend, Range, HighVol/Event
+2 active policies: Momentum and MeanReversion
+1 passive policy: NoTrade
+Hard risk engine in NT8 (C#, not ML-driven)
+Python state generator with dual-mode runner (scheduled vs service)
+JSON state file as the sole communication channel
+CSV/JSON logging sufficient for future ML training
+SIM execution only until paper trading criteria pass
+Pre-session event calendar loaded from a manually maintained CSV
+Excluded from V1 (explicitly cut):
+
+All ML model inference (no XGBoost, no LightGBM yet)
+Multi-instrument trading
+Tick data or order flow features
+Anomaly detection model
+Automated retraining
+Real-time online learning
+API-based economic calendar (manual CSV only)
+Windows Service installation (run_once scheduled script is V1 mode)
+Pyramiding or scaling into positions
+Any UI or dashboard
+Why This Is the Right First Version
+MNQ is chosen over MES because NQ has the cleanest intraday trend structure of the micro contracts, the most retail-accessible data history, and a tick value of $0.50 per MNQ contract that makes a $40 per-trade risk limit easy to size precisely. Starting with one instrument eliminates correlation complexity and keeps the log data clean for a single-instrument ML training pipeline later.
+
+Rule-based regimes are chosen over ML because the first job of V1 is to generate labeled logs, not to classify with a trained model. Every session V1 runs produces a ground-truth log of what the rule-based classifier decided, what trades were taken, and what happened. That log is the training dataset for the V2 ML regime classifier. You cannot train a supervised classifier without data. V1 generates that data while also trading profitably enough to validate the regime logic.
+
+The dual-mode Python runner is the single most important structural decision in this document. It means you can develop on a simple loop script today and promote to an always-on service later with zero changes to NT8 or the state file format.
+
+SECTION B — FINAL MVP ARCHITECTURE
+Runtime Components
+[Python: StateEngine]          runs every 5 minutes
+        ↓
+[state/model_state.json]       written atomically
+        ↑
+[NT8: RAFTS_MNQ.cs]            reads on each 5-min bar close
+        ↓
+[NT8: RiskEngine (internal)]   approves or rejects
+        ↓
+[NT8: OrderSubmission]         enters/exits MNQ in SIM
+        ↓
+[logs/trade_log.csv]           written by NT8
+[logs/signal_log.csv]          written by NT8
+What Runs in Python
+Component	File	Responsibility
+Feature calculator	engine/features.py	Computes all 12 V1 features from bar data
+Regime classifier	engine/regime.py	Rule-based: 3 regimes from features
+Policy selector	engine/policy.py	Maps regime + scores → policy + bias
+State writer	engine/state_writer.py	Writes JSON atomically
+Session context loader	engine/session_context.py	Loads calendar, prior session data
+StateEngine (orchestrator)	engine/state_engine.py	Calls all above in sequence
+Scheduled runner	runners/run_scheduled.py	Dev mode: loop + sleep
+Service runner	runners/run_service.py	Prod mode: Windows Service wrapper
+Config loader	config/loader.py	Reads all YAML configs
+What Runs in NT8
+Component	File	Responsibility
+State file reader	RAFTS_MNQ.cs	Reads JSON every 5-min bar close
+Staleness checker	RAFTS_MNQ.cs	Rejects state older than 10 minutes
+Risk engine	RAFTS_MNQ.cs	Hard limits, daily P&L tracking
+Policy executor	RAFTS_MNQ.cs	Executes entries/exits based on state
+Session flattener	RAFTS_MNQ.cs	Forces flat at 3:55 PM Eastern
+Trade logger	RAFTS_MNQ.cs	Writes to trade_log.csv
+Signal logger	RAFTS_MNQ.cs	Writes to signal_log.csv at each bar
+Runtime Flow (Step by Step)
+1. 8:55 AM  - Python: run_scheduled.py starts
+2. 9:00 AM  - StateEngine.initialize():
+                loads event_calendar.csv → sets event_risk_flag
+                loads prior_session.json → sets prior_regime, prior_atr_baseline
+                writes initial state with regime=UNKNOWN, bias=NONE
+3. 9:30 AM  - NT8 strategy OnStrategyStart():
+                reads model_state.json, validates freshness
+                initializes daily P&L = 0, trade_count = 0, loss_streak = 0
+4. 9:35 AM  - First 5-min bar closes in NT8:
+                NT8 reads model_state.json
+                risk engine evaluates → session too early (< 15 min), no trade
+5. 9:40 AM+ - Each 5-min bar close in NT8:
+                reads model_state.json
+                if regime = TREND_BULL and bias = LONG and signal_confidence > 0.55:
+                   risk engine evaluates → approve 1 contract
+                   submit limit order near EMA
+6. Parallel: every 5 minutes, Python StateEngine.run_once():
+                fetches latest completed 5-min bars via data_feed module
+                computes 12 features
+                classifies regime (rule-based)
+                computes signal confidence
+                writes model_state.json atomically (write to .tmp, rename)
+7. Trade fills in NT8:
+                on fill: log to trade_log.csv
+                on bar: log to signal_log.csv
+8. 3:55 PM   - NT8: force flatten all positions, write final log entries
+9. 4:05 PM   - Python: StateEngine writes end-of-session summary
+                saves prior_session.json for tomorrow
+               run_scheduled.py exits (or service sleeps until tomorrow)
+The Dual-Mode Python Design (Core of This Document)
+The key is that StateEngine has no concept of how it is being scheduled. It exposes exactly one public method: run_once(). The runners call it. NT8 never interacts with the runners at all.
+
+python
+# engine/state_engine.py
+class StateEngine:
+    def __init__(self, config):
+        self.config = config
+        self.session_context = None
+
+    def initialize_session(self):
+        """Call once per trading day before market open."""
+        self.session_context = load_session_context(self.config)
+        write_initial_state(self.config, self.session_context)
+
+    def run_once(self):
+        """
+        Fetch latest data, compute features, classify regime,
+        score signal, write state file. Call this every 5 minutes.
+        NT8 reads the output. This method does not know or care
+        how it is being scheduled.
+        """
+        bars = fetch_latest_bars(self.config)
+        features = compute_features(bars, self.session_context)
+        regime = classify_regime(features, self.config)
+        signal = score_signal(features, regime, self.session_context)
+        write_state(self.config, regime, signal)
+        log_state(self.config, features, regime, signal)
+
+    def finalize_session(self):
+        """Call once after market close."""
+        save_prior_session(self.config, self.session_context)
+python
+# runners/run_scheduled.py  ← V1 development mode
+"""
+Simple scheduled runner. No external dependencies beyond 'schedule'.
+Run this manually before market open. It calls StateEngine.run_once()
+every 5 minutes. Stop it at end of day. This is the V1 default.
+To upgrade to service mode, only this file changes. StateEngine is untouched.
+"""
+import time, schedule
+from engine.state_engine import StateEngine
+from config.loader import load_config
+
+def main():
+    config = load_config()
+    engine = StateEngine(config)
+    engine.initialize_session()
+
+    schedule.every(5).minutes.do(engine.run_once)
+
+    print("RAFTS scheduled runner started. Press Ctrl+C to stop.")
+    try:
+        while True:
+            schedule.run_pending()
+            time.sleep(10)
+    except KeyboardInterrupt:
+        engine.finalize_session()
+        print("Runner stopped. Session finalized.")
+
+if __name__ == "__main__":
+    main()
+python
+# runners/run_service.py  ← V2 always-on mode (add later, zero StateEngine changes)
+"""
+Windows Service wrapper using pywin32. Installs with:
+    python runners/run_service.py install
+    python runners/run_service.py start
+StateEngine.run_once() is called identically. NT8 sees no difference.
+"""
+import win32serviceutil, win32service, win32event
+import time, schedule
+from engine.state_engine import StateEngine
+from config.loader import load_config
+
+class RAFTSService(win32serviceutil.ServiceFramework):
+    _svc_name_ = "RAFTS_ModelServer"
+    _svc_display_name_ = "RAFTS Model Server"
+
+    def __init__(self, args):
+        super().__init__(args)
+        self.stop_event = win32event.CreateEvent(None, 0, 0, None)
+        self.config = load_config()
+        self.engine = StateEngine(self.config)
+
+    def SvcStop(self):
+        self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)
+        win32event.SetEvent(self.stop_event)
+        self.engine.finalize_session()
+
+    def SvcDoRun(self):
+        self.engine.initialize_session()
+        schedule.every(5).minutes.do(self.engine.run_once)
+        while win32event.WaitForSingleObject(self.stop_event, 1000) != win32event.WAIT_OBJECT_0:
+            schedule.run_pending()
+
+if __name__ == "__main__":
+    win32serviceutil.HandleCommandLine(RAFTSService)
+The NT8 side reads model_state.json identically regardless of which runner produced it. The file format, path, and staleness check never change between modes.
+
+To upgrade from option 1 to option 2:
+
+pip install pywin32
+python runners/run_service.py install
+python runners/run_service.py start
+Delete your manual morning startup shortcut
+That is the entire upgrade. No NT8 changes. No StateEngine changes. No config changes.
+
+SECTION C — MVP REGIMES AND POLICIES
+V1 Regime Taxonomy: 3 Classes
+REGIME_0: TREND      (bullish or bearish, direction encoded in bias field)
+REGIME_1: RANGE      (choppy, oscillating, no clear direction)
+REGIME_2: HIGHVOL    (elevated ATR, news distortion, or event risk)
+Three classes is the correct number for V1. Not four, not ten. The reason: you need enough examples per class to validate behavior, and with ~252 trading days per year, using 3 years of data gives roughly 252 trend days, 420 range days, and 84 highvol days (approximate historical distributions). Any more regime classes and individual classes become too small to validate meaningfully.
+
+Regime Classification Rules (Rule-Based, Exact Formulas)
+All computed at each 5-minute bar close during RTH. Uses 5-min OHLCV data.
+
+Step 1: Compute the 4 regime input metrics
+
+python
+# ATR ratio - normalized volatility
+atr_14 = ATR(14, 5min_bars)
+atr_baseline = rolling_mean(ATR(14, 5min_bars), last_20_sessions_same_time)
+atr_ratio = atr_14 / atr_baseline          # > 1.5 = elevated vol
+
+# Efficiency Ratio - trend vs chop
+direction_move = abs(close[now] - close[now - 20])
+path_length = sum(abs(close[i] - close[i-1]) for i in last 20 bars)
+efficiency_ratio = direction_move / path_length  # 0.0=chop, 1.0=perfect trend
+
+# VWAP distance - directional positioning
+vwap_distance = (close[now] - session_vwap) / atr_14   # signed, in ATR units
+
+# Event risk flag - loaded from session_context at open
+event_risk_flag = session_context["event_risk_flag"]    # 0/1/2/3
+Step 2: Apply classification rules in priority order
+
+python
+def classify_regime(features, config):
+    atr_ratio      = features["atr_ratio"]
+    efficiency     = features["efficiency_ratio"]
+    vwap_dist      = features["vwap_distance_atr"]
+    event_flag     = features["event_risk_flag"]
+    minutes_open   = features["minutes_since_open"]
+
+    # Rule 1: HighVol takes priority over everything
+    # Triggered by: elevated ATR OR high-impact event OR < 10 min since open
+    if atr_ratio > 1.8 or event_flag >= 2 or minutes_open < 10:
+        return Regime.HIGHVOL, Direction.NONE
+
+    # Rule 2: Trend - requires efficiency AND VWAP position agreement
+    if efficiency > 0.50:
+        if vwap_dist > 0.30:                 # price meaningfully above VWAP
+            return Regime.TREND, Direction.LONG
+        elif vwap_dist < -0.30:              # price meaningfully below VWAP
+            return Regime.TREND, Direction.SHORT
+        # Efficient move but VWAP-neutral: borderline, classify as RANGE
+        return Regime.RANGE, Direction.NONE
+
+    # Rule 3: Range - everything else
+    return Regime.RANGE, Direction.NONE
+Threshold justification:
+
+atr_ratio > 1.8: Current ATR is 80% above its 20-session baseline. This is the top 15% of all volatility readings and consistently marks news-distorted or fast-market sessions.
+efficiency > 0.50: The Kaufman ER threshold of 0.50 means directional movement accounts for more than half the path length. Values below this are statistically indistinguishable from random walks.
+vwap_dist > 0.30 ATR: Requires price to be at least 0.3 ATR away from VWAP, which filters out VWAP-hugging price action that produces false trend signals.
+Policy Definitions
+Policy 1: MOMENTUM (active when regime = TREND)
+
+Entry condition (LONG):
+  - Regime = TREND, Direction = LONG
+  - Price pulled back to within 0.25 ATR of the 21-EMA on 5-min chart
+  - The 21-EMA is above VWAP (confirms trend is above mean)
+  - signal_confidence >= 0.55
+  - No open position
+
+Entry condition (SHORT):
+  - Mirror of above, price near 21-EMA, 21-EMA below VWAP
+
+Stop: 1.5 × ATR(14) beyond entry (placed as hard stop order)
+Target: 2.0 × ATR(14) from entry (placed as limit order)
+Maximum bars in trade: 20 (forced exit if neither hit)
+Policy 2: MEANREV (active when regime = RANGE)
+
+Entry condition (LONG mean reversion):
+  - Regime = RANGE
+  - price < VWAP - 1.2 ATR  (overextended below VWAP)
+  - Efficiency ratio < 0.35  (genuinely choppy, not trending)
+  - signal_confidence >= 0.55
+  - No open position
+
+Entry condition (SHORT mean reversion):
+  - price > VWAP + 1.2 ATR  (overextended above VWAP)
+  - Efficiency ratio < 0.35
+
+Stop: 1.5 × ATR(14) beyond entry
+Target: VWAP (dynamic, moves with VWAP calculation)
+Maximum bars in trade: 12 (mean reversion should resolve faster)
+Policy 3: NOTRADE (forced passive mode)
+
+Activated immediately and stays active when ANY of the following are true:
+
+- Regime = HIGHVOL
+- event_risk_flag >= 2
+- signal_confidence < 0.55
+- minutes_since_open < 15  (first 15 minutes of RTH always excluded)
+- minutes_until_close < 30  (no new entries in last 30 minutes)
+- Within 10 minutes before or after any event in calendar
+- daily_loss >= 75% of daily_limit ($120 of $160)
+- consecutive_losses >= 3
+- state_file_age > 10 minutes
+- anomaly_flag = 1  (in V1 this is just atr_ratio > 3.0)
+Signal Confidence Scoring (V1 Rule-Based, Not ML)
+In V1, confidence is computed from a simple weighted score rather than a trained model, so there is something meaningful in the field while data is being collected for V2's ML model.
+
+python
+def compute_signal_confidence(features, regime, direction):
+    score = 0.0
+
+    # Regime clarity (how cleanly does this fit the regime?)
+    if regime == TREND:
+        er = features["efficiency_ratio"]
+        score += min(er / 0.70, 1.0) * 0.40      # up to 0.40 from ER strength
+
+        vwap_alignment = abs(features["vwap_distance_atr"])
+        score += min(vwap_alignment / 1.0, 1.0) * 0.25   # up to 0.25 from VWAP distance
+
+    elif regime == RANGE:
+        chop = 1.0 - features["efficiency_ratio"]
+        score += min(chop / 0.65, 1.0) * 0.40
+
+        vwap_extension = abs(features["vwap_distance_atr"])
+        score += min(vwap_extension / 1.5, 1.0) * 0.25
+
+    # Volume confirmation
+    rel_vol = features["relative_volume"]
+    if rel_vol > 1.2:
+        score += 0.20
+    elif rel_vol > 0.9:
+        score += 0.10
+
+    # Time-of-day penalty (midday chop window)
+    mins = features["minutes_since_open"]
+    if 150 <= mins <= 270:   # 12:00 PM - 2:30 PM Eastern
+        score *= 0.75        # reduce confidence during lunch
+
+    # Event proximity penalty
+    if features["event_risk_flag"] == 1:
+        score *= 0.80
+
+    return round(min(score, 1.0), 3)
+This scoring function is intentionally interpretable and logged at every bar. When V2 replaces it with an ML scorer, the historical log of this rule-based score alongside actual trade outcomes becomes the training dataset.
+
+SECTION D — MVP RISK ENGINE
+The risk engine lives entirely in NT8 C# and is independent of every Python output. It cannot be bypassed by a model state. Every check is a hard conditional gate, not a soft recommendation.
+
+Per-Trade Risk Rules
+Instrument: MNQ only
+Contract size: 1 or 2 MNQ (see confidence scaling below)
+Tick value: $0.50 per tick, 4 ticks = 1 point = $2.00 per MNQ
+
+Maximum risk per trade: $40.00
+  → At $2.00/point: max stop = 20 points from entry
+  → Stop is set as ATR-based: stop_points = 1.5 × ATR(14) on 5-min chart
+  → If ATR-based stop would exceed 20 points, reduce to 1 contract AND cap stop at 20 points
+  → If 20-point stop still exceeds $40 risk, DO NOT ENTER (position size would be < 1 contract)
+
+Target: 2.0 × ATR(14) points from entry
+  → If ATR-based target is less than 5 points, skip the trade (reward too small after spread)
+
+Contract size scaling:
+  signal_confidence >= 0.70 AND daily_loss < 25% of limit → 2 contracts (max $80 risk)
+  signal_confidence < 0.70 OR daily_loss >= 25% → 1 contract (max $40 risk)
+  Note: 2 contracts is the absolute maximum. This cap cannot be overridden.
+Daily Lockout Rules
+daily_limit = $160.00
+
+Tier 1 (daily_loss >= $40, 25% of limit):
+  → Position size reduced to 1 contract maximum
+  → Breakout entries disabled (only confirmed pullback entries allowed)
+
+Tier 2 (daily_loss >= $80, 50% of limit):
+  → Position size: 1 contract maximum
+  → MEANREV policy disabled (only MOMENTUM policy active if in TREND regime)
+  → Minimum signal_confidence threshold raised to 0.65
+
+Tier 3 (daily_loss >= $120, 75% of limit):
+  → ALL new entries disabled for remainder of session
+  → Log entry: "DAILY_LOCKOUT_TIER3"
+  → Flatten any open position if still open
+
+Tier 4 (daily_loss >= $160, 100% of limit):
+  → Should never reach here due to Tier 3
+  → Emergency flatten regardless of position state
+  → Log entry: "DAILY_LIMIT_BREACH_EMERGENCY"
+  → Alert sent via NT8 email notification
+Max Trades Per Day
+Maximum trades per day: 5
+  → Counter increments on each fill (entry only, not exit)
+  → When trade_count >= 5: no new entries for remainder of session
+  → Exception: existing open position can still be managed (moved stop, exit)
+  → Log entry when limit reached: "MAX_TRADES_REACHED"
+Consecutive Loss Logic
+loss_streak counter:
+  → Increments on each completed losing trade
+  → Resets to 0 on any winning trade
+
+loss_streak = 1: No change
+loss_streak = 2: Log warning "LOSS_STREAK_2", no behavioral change
+loss_streak = 3:
+  → Mandatory 30-minute trading halt (no new entries)
+  → Position size reduced to 1 contract for remainder of session
+  → signal_confidence threshold raised to 0.65 for remainder of session
+  → Log entry: "LOSS_STREAK_3_HALT"
+loss_streak = 4:
+  → All new entries disabled for remainder of session
+  → Log entry: "LOSS_STREAK_4_SESSION_END"
+Session-End Flatten Rules
+3:50 PM Eastern: Warning log "SESSION_END_WARNING_10MIN"
+  → No new entries from this point regardless of signals
+
+3:55 PM Eastern: Force flatten
+  → If any open position exists: submit market order to close immediately
+  → Log entry: "SESSION_END_FLATTEN" with position size and current P&L
+
+4:00 PM Eastern: Final daily log entry
+  → Write summary to daily_summary.json
+  → Reset all intraday counters
+
+OnStrategyStop() (if NT8 is stopped manually):
+  → Same flatten logic executes
+  → Prevents orphaned positions
+Stale State Failsafe Behavior
+At each OnBarUpdate() in NT8:
+  1. Read model_state.json
+  2. Parse "timestamp" field
+  3. Compute age = (current_time - timestamp_in_file) in minutes
+
+If file does not exist:
+  → Log "STATE_FILE_MISSING"
+  → Enter FAILSAFE mode: no new entries, existing position managed normally
+
+If file age > 10 minutes:
+  → Log "STATE_FILE_STALE: {age} minutes old"
+  → Enter FAILSAFE mode
+
+If file is malformed (JSON parse error):
+  → Log "STATE_FILE_CORRUPT"
+  → Enter FAILSAFE mode
+
+FAILSAFE mode behavior:
+  → No new entry orders submitted
+  → Existing open position: hold until stop or target fires
+  → After existing position closes: no new entries until valid fresh state received
+  → NT8 checks state file on every bar and exits FAILSAFE as soon as a fresh valid file appears
+  → This means if Python recovers, NT8 automatically resumes trading within 5 minutes
+SECTION E — PROJECT FILE STRUCTURE
+rafts/
+│
+├── README.md
+├── requirements.txt                # schedule, pyyaml, pandas, numpy, requests
+├── .env                            # DATA_PATH, LOG_PATH, STATE_PATH (not committed)
+├── .gitignore
+│
+├── config/
+│   ├── loader.py                   # Loads all config files, returns typed dataclass
+│   ├── instruments.yaml            # MNQ tick size, margin, trading hours
+│   ├── regimes.yaml                # Regime thresholds (atr_ratio, er, vwap_dist)
+│   ├── risk.yaml                   # per_trade_max, daily_max, max_trades, etc.
+│   └── paths.yaml                  # All file paths (state, logs, data)
+│
+├── engine/
+│   ├── __init__.py
+│   ├── state_engine.py             # Orchestrator: calls all modules in sequence
+│   ├── features.py                 # Computes all 12 V1 features
+│   ├── regime.py                   # Rule-based 3-class regime classifier
+│   ├── policy.py                   # Maps regime → policy + bias + confidence
+│   ├── state_writer.py             # Atomic JSON write to state/model_state.json
+│   └── session_context.py          # Loads calendar CSV, prior session JSON
+│
+├── data/
+│   ├── feed.py                     # Fetches 5-min bars (from file or broker API)
+│   ├── calendar/
+│   │   └── event_calendar.csv      # Manually maintained economic calendar
+│   └── history/
+│       └── mnq_5min_YYYYMMDD.csv   # Raw 5-min bar archives (for feature baseline)
+│
+├── runners/
+│   ├── run_scheduled.py            # V1: simple loop, call this manually each morning
+│   └── run_service.py              # V2: Windows Service wrapper (add when ready)
+│
+├── state/
+│   └── model_state.json            # Written by Python, read by NT8 (live file)
+│
+├── logs/
+│   ├── trade_log.csv               # Written by NT8
+│   ├── signal_log.csv              # Written by NT8 (every bar)
+│   ├── state_log.csv               # Written by Python (every run_once call)
+│   ├── session_summaries/
+│   │   └── summary_YYYYMMDD.json   # End-of-day summary
+│   └── prior_session.json          # Carries forward ATR baseline and regime
+│
+├── ninjatrader/
+│   ├── RAFTS_MNQ.cs                # Main NT8 strategy file
+│   └── README_NT8.md               # Installation instructions for NT8
+│
+├── monitoring/
+│   ├── daily_review.py             # Run manually after session: prints key metrics
+│   └── check_logs.py               # Validates log file integrity
+│
+└── tests/
+    ├── test_features.py
+    ├── test_regime.py
+    ├── test_state_writer.py
+    └── fixtures/
+        └── sample_bars.csv
+Key path rules:
+
+state/model_state.json — the one file NT8 and Python both reference. Path configured in config/paths.yaml and matched in NT8 strategy settings.
+logs/ — NT8 and Python both write here. Different files, same directory.
+data/history/ — needed only for computing ATR baselines at session start. Small files.
+SECTION F — IMPLEMENTATION ORDER
+Phase 0: Environment Setup (Blocker for everything)
+Task 0.1: Create repo with folder structure above
+Task 0.2: Create virtual environment, install requirements.txt
+Task 0.3: Create config/paths.yaml with correct paths for your machine
+Task 0.4: Create config/risk.yaml with all risk parameters
+Task 0.5: Create config/regimes.yaml with all regime thresholds
+Task 0.6: Verify NT8 is installed and SIM account is configured
+Task 0.7: Verify you can export 5-min MNQ bars from NT8 to CSV
+Blocker status: Must complete before any other phase.
+
+Phase 1: Data and Feature Layer (Blocker for regime classifier)
+Task 1.1: Export 3 years of 5-min MNQ bars from NT8 to data/history/
+Task 1.2: Build data/feed.py to load bars from CSV (no live feed yet)
+Task 1.3: Build engine/features.py - compute all 12 features from bar array
+Task 1.4: Write tests/test_features.py - verify feature output on known bars
+Task 1.5: Compute ATR baseline per time-of-day bucket from history, save to file
+Blocker status: Task 1.3 blocks regime.py. Task 1.5 blocks session_context.py.
+
+Phase 2: Regime and Policy Layer (Blocker for state engine)
+Task 2.1: Build engine/regime.py with rule-based 3-class classifier
+Task 2.2: Build engine/policy.py with 3 policies + confidence scorer
+Task 2.3: Write tests/test_regime.py - verify each regime rule fires correctly
+Task 2.4: Run classifier on all 3 years of history, export regime labels to CSV
+         (This becomes ground truth training data for V2 ML classifier)
+Blocker status: Task 2.1 blocks state_engine.py. Task 2.4 is valuable for V2 but not a blocker.
+
+Phase 3: State Engine and File Layer (Blocker for NT8 integration)
+Task 3.1: Build engine/session_context.py - calendar loader + prior session
+Task 3.2: Build engine/state_writer.py - atomic JSON write with tmp→rename
+Task 3.3: Build engine/state_engine.py - orchestrates 3.1, 3.2, features, regime, policy
+Task 3.4: Build runners/run_scheduled.py - calls state_engine every 5 minutes
+Task 3.5: Run run_scheduled.py manually on historical data, inspect state JSON output
+Task 3.6: Create manual event_calendar.csv for next 4 weeks
+Blocker status: Task 3.4 must run cleanly before NT8 integration starts.
+
+Phase 4: NT8 Strategy (Blocker for SIM trading)
+Task 4.1: Create RAFTS_MNQ.cs shell in NT8 - compile, attach to SIM chart
+Task 4.2: Implement state file reader + staleness check in NT8
+Task 4.3: Implement risk engine in NT8 (daily P&L, trade count, streak tracking)
+Task 4.4: Implement trade entry logic for MOMENTUM policy only (test first)
+Task 4.5: Implement session-end flatten
+Task 4.6: Implement trade_log.csv and signal_log.csv writers in NT8
+Task 4.7: SIM test: run Python runner + NT8 strategy on replay data for 3 days
+Task 4.8: Add MEANREV policy to NT8 strategy
+Task 4.9: Full SIM test: run all components together for 5 replay sessions
+Blocker status: Task 4.3 (risk engine) must be correct before any live or SIM execution.
+
+Phase 5: SIM Paper Trading (Blocker for micro-live)
+Task 5.1: Run on live SIM market for 10 sessions (2 weeks)
+Task 5.2: Review trade_log.csv and signal_log.csv daily
+Task 5.3: Run monitoring/daily_review.py each afternoon
+Task 5.4: Fix any bugs discovered in live SIM
+Task 5.5: Validate that all 3 regimes are being classified at least once
+Task 5.6: Validate that NoTrade mode fires correctly during event windows
+Task 5.7: Validate that daily loss limits are respected in all cases
+Task 5.8: Decision checkpoint: proceed to micro-live or continue SIM
+SECTION G — FIRST 7-DAY CODING SPRINT
+Day 1 — Environment, Config, and Folder Structure
+
+Files to create:
+
+Entire folder structure from Section E
+requirements.txt
+config/paths.yaml, config/risk.yaml, config/regimes.yaml, config/instruments.yaml
+config/loader.py (reads all YAML files into a typed config object)
+.gitignore
+Expected output: python -c "from config.loader import load_config; print(load_config())" runs without error and prints all config values correctly.
+
+Day 2 — Bar Data and Feature Computation
+
+Files to create:
+
+data/feed.py (loads 5-min bars from CSV into a pandas DataFrame)
+engine/features.py (computes all 12 features from a bar DataFrame)
+tests/fixtures/sample_bars.csv (copy 10 sessions of MNQ data manually)
+tests/test_features.py
+Expected output: pytest tests/test_features.py passes all assertions. Inspect feature values manually on 3 known sessions and confirm they look correct.
+
+Day 3 — ATR Baseline, Session Context, Calendar
+
+Files to create:
+
+Script to compute ATR baseline per 5-min time bucket from 3 years of history, saved to data/atr_baseline.json
+data/calendar/event_calendar.csv (manually fill in next 4 weeks of events)
+engine/session_context.py
+logs/prior_session.json (create blank starting template)
+Expected output: session_context.py loads cleanly and prints event flags for today and prior session metadata.
+
+Day 4 — Regime Classifier and Policy Engine
+
+Files to create:
+
+engine/regime.py
+engine/policy.py
+tests/test_regime.py (test all regime boundary conditions explicitly)
+Expected output: Run classifier on 50 historical sessions, spot-check 10 by hand and verify the regime calls match your manual judgment. TREND days should show ER > 0.50 and clear VWAP position. RANGE days should show ER < 0.40 with oscillation around VWAP.
+
+Day 5 — State Writer and State Engine
+
+Files to create:
+
+engine/state_writer.py (atomic write using tmp file + rename)
+engine/state_engine.py
+runners/run_scheduled.py
+Expected output: Run python runners/run_scheduled.py pointed at historical data, let it run for 30 minutes simulating a session. Open state/model_state.json and verify it contains valid, timestamped, complete output on every cycle.
+
+Day 6 — NT8 Strategy Shell: State Reader + Risk Engine
+
+Files to create:
+
+ninjatrader/RAFTS_MNQ.cs (initial version)
+State file reader with staleness check
+Risk engine (daily P&L tracking, trade count, streak counter, tier-based lockouts)
+Session-end flatten
+Basic trade_log.csv writer
+Expected output: Compile in NT8 with zero errors. Attach to SIM chart. Verify in NT8 output window that it reads the state file and prints regime + confidence on each bar close. Trigger the daily limit manually in test and confirm lockout fires.
+
+Day 7 — NT8 Trade Execution + First Full SIM Run
+
+Files to create:
+
+Add trade entry logic to RAFTS_MNQ.cs (MOMENTUM policy first)
+signal_log.csv writer in NT8
+monitoring/daily_review.py (prints summary from logs)
+Expected output: Full system running together. Python runner active. NT8 attached to SIM replay. Complete a full replay session from 9:30 AM to 4:00 PM. Review trade_log.csv and confirm entries match expected regime and policy conditions. Confirm session-end flatten fired at 3:55 PM.
+
+SECTION H — CODE GENERATION ORDER
+Build in this exact dependency order. Each file is a blocker for the ones that follow it.
+
+1. config/loader.py
+   Depends on: YAML config files (hand-written)
+   Enables: everything else
+
+2. data/feed.py
+   Depends on: config/loader.py
+   Enables: engine/features.py
+
+3. engine/features.py
+   Depends on: data/feed.py
+   Enables: engine/regime.py, tests/test_features.py
+
+4. engine/session_context.py
+   Depends on: config/loader.py, event_calendar.csv
+   Enables: engine/state_engine.py
+
+5. engine/regime.py
+   Depends on: engine/features.py, config/regimes.yaml
+   Enables: engine/policy.py, tests/test_regime.py
+
+6. engine/policy.py
+   Depends on: engine/regime.py
+   Enables: engine/state_engine.py
+
+7. engine/state_writer.py
+   Depends on: config/loader.py (for paths)
+   Enables: engine/state_engine.py
+
+8. engine/state_engine.py
+   Depends on: features, regime, policy, state_writer, session_context
+   Enables: runners/run_scheduled.py
+
+9. runners/run_scheduled.py
+   Depends on: engine/state_engine.py
+   Enables: NT8 integration (state file now exists)
+
+10. ninjatrader/RAFTS_MNQ.cs
+    Depends on: state file being written (step 9)
+    Enables: SIM trading
+
+11. monitoring/daily_review.py
+    Depends on: trade_log.csv and signal_log.csv existing (from NT8)
+    Enables: daily validation workflow
+
+12. runners/run_service.py   ← add only when upgrading to always-on
+    Depends on: engine/state_engine.py (no changes needed to it)
+    Enables: always-on service mode
+SECTION I — DATA AND LOGGING SCHEMA
+1. state/model_state.json
+json
+{
+  "timestamp": "2024-11-15T10:35:00",
+  "timestamp_unix": 1731666900,
+  "regime": "TREND",
+  "regime_confidence": 0.71,
+  "bias": "LONG",
+  "policy": "MOMENTUM",
+  "signal_confidence": 0.68,
+  "no_trade": false,
+  "no_trade_reason": null,
+  "event_risk_flag": 1,
+  "atr_14": 12.50,
+  "atr_ratio": 1.05,
+  "efficiency_ratio": 0.62,
+  "vwap_distance_atr": 0.45,
+  "relative_volume": 1.18,
+  "risk_multiplier": 1.0,
+  "max_contracts_allowed": 2,
+  "anomaly_flag": false,
+  "model_version": "v1.0.0-rules",
+  "runner_mode": "scheduled"
+}
+Field rules:
+
+timestamp is ISO 8601, Eastern time. NT8 uses this for staleness check.
+no_trade = true means NT8 must not enter any position regardless of other fields.
+no_trade_reason is a string when no_trade is true (e.g. "HIGHVOL_REGIME", "EVENT_RISK_FLAG_2", "MINUTES_SINCE_OPEN_8").
+model_version includes -rules suffix in V1 so V2 ML can be distinguished in logs.
+runner_mode distinguishes scheduled vs service in logs.
+2. logs/trade_log.csv
+timestamp,instrument,direction,contracts,entry_price,stop_price,target_price,
+exit_price,exit_reason,pnl_ticks,pnl_dollars,duration_bars,regime_at_entry,
+policy_at_entry,signal_confidence_at_entry,atr_at_entry,daily_pnl_before,
+daily_pnl_after,trade_count_today,loss_streak_at_entry,session_date
+
+2024-11-15T10:37:14,MNQ,LONG,1,20043.50,20023.50,20068.50,
+20068.50,TARGET_HIT,50,25.00,8,TREND,MOMENTUM,0.68,12.50,-0.00,
+25.00,1,0,2024-11-15
+Every field is mandatory. The regime_at_entry, policy_at_entry, and signal_confidence_at_entry fields are the most important for future ML training — they link trade outcomes to the model state that generated them.
+
+3. logs/signal_log.csv
+Written at every 5-minute bar close regardless of whether a trade occurs. This is the densest log and most valuable for ML training.
+
+timestamp,bar_open,bar_high,bar_low,bar_close,bar_volume,
+atr_14,atr_ratio,efficiency_ratio,vwap_distance_atr,relative_volume,
+minutes_since_open,session_vwap,regime,bias,policy,signal_confidence,
+no_trade,no_trade_reason,event_risk_flag,daily_pnl,trade_count,
+loss_streak,open_position,session_date
+
+2024-11-15T10:35:00,20038.00,20051.25,20035.75,20048.50,1842,
+12.50,1.05,0.62,0.45,1.18,
+65,20042.10,TREND,LONG,MOMENTUM,0.68,
+false,null,1,-25.00,1,
+0,false,2024-11-15
+Logging frequency: Every completed 5-min bar during RTH (9:30 AM – 4:00 PM Eastern). Approximately 78 rows per session per instrument. Clean and queryable.
+
+4. logs/prior_session.json
+Written at end of each session by Python. Read at start of next session.
+
+json
+{
+  "session_date": "2024-11-15",
+  "final_regime": "TREND",
+  "final_bias": "LONG",
+  "atr_baseline_update": {
+    "bucket_0930": 11.20,
+    "bucket_0935": 11.45,
+    "...": "all 78 buckets updated with today's ATR readings"
+  },
+  "session_summary": {
+    "total_trades": 3,
+    "winning_trades": 2,
+    "daily_pnl": 37.50,
+    "max_drawdown": -40.00,
+    "regimes_observed": ["TREND", "RANGE"],
+    "daily_limit_hit": false,
+    "loss_streak_max": 1
+  },
+  "prior_day_high": 20112.75,
+  "prior_day_low": 19987.25,
+  "prior_day_close": 20087.50,
+  "prior_day_vwap": 20052.30
+}
+5. data/calendar/event_calendar.csv
+date,time_eastern,event_name,tier,expected,prior
+2024-11-15,08:30,Initial Jobless Claims,2,225K,221K
+2024-11-20,10:30,Crude Oil Inventories,2,-0.8M,-1.1M
+2024-11-21,14:00,FOMC Minutes,1,,
+2024-11-27,08:30,Core PCE Price Index,1,0.3%,0.3%
+Tier values: 1 = FOMC/CPI/NFP/PCE, 2 = PPI/Claims/ISM/EIA, 3 = minor.
+
+Maintenance: Update this file manually each Sunday evening for the following week. This takes under 5 minutes using ForexFactory or the CME economic calendar. Do not build an API for this in V1.
+
+SECTION J — MVP FEATURE SET
+The 12 V1 Features
+These are the only features computed in V1. Everything else is deferred.
+
+Computed in Python (via engine/features.py):
+
+#	Feature Name	Formula / Definition	Why It Survives the Cut
+F01	atr_14	ATR(14) on 5-min bars	Absolute volatility measure; needed for stop/target sizing
+F02	atr_ratio	atr_14 / atr_baseline[time_bucket]	Normalized vol; the single most important regime discriminator
+F03	efficiency_ratio	Kaufman ER, 20-bar lookback	Best single measure of trend vs chop
+F04	vwap_distance_atr	(close - session_vwap) / atr_14, signed	Positional context; VWAP is the institutional benchmark
+F05	relative_volume	session_vol_now / avg_vol_at_same_time	Participation level; high vol confirms breakouts
+F06	minutes_since_open	Integer minutes since 9:30 AM Eastern	Time-of-day filter; prevents trading at wrong session times
+F07	bar_range_ratio	(high - low) / atr_14	Current bar volatility vs baseline
+F08	close_in_range	(close - low) / (high - low)	Bar close position; confirms direction
+F09	ema21_distance_atr	(close - EMA(21)) / atr_14	Structure reference for momentum entries
+F10	prior_day_high_dist	(close - prior_day_high) / atr_14	Key resistance reference
+F11	prior_day_low_dist	(close - prior_day_low) / atr_14	Key support reference
+F12	event_risk_flag	Loaded from session_context	Hard behavioral constraint, not a signal
+Computed in NT8 (used for execution only, not written to Python features):
+
+Feature	Purpose	Why in NT8 not Python
+Live VWAP	Entry timing	Needs tick-by-tick calculation inside NT8
+Live EMA(21)	Entry trigger	NT8 indicator, not needed by Python
+Current position P&L	Risk engine	NT8 account data, not accessible to Python
+Features deliberately excluded from V1:
+
+Order flow / delta (requires tick data, significant infrastructure)
+Return autocorrelation (too similar to efficiency ratio for V1)
+Failed breakout count (valuable but requires pattern detection logic to build correctly)
+Opening range features (useful but adds session-phase complexity; add in V2)
+Any candlestick pattern (overfit risk too high)
+SECTION K — V1 TO V2 UPGRADE PATH
+What V1 Is Building While It Trades
+Every session V1 runs, it produces:
+
+78 rows in signal_log.csv with 12 features, rule-based regime label, and rule-based confidence
+N rows in trade_log.csv with trade outcomes linked to those feature values
+A prior_session.json that carries forward context
+After 3 months of SIM + micro live trading, you will have approximately 60 sessions × 78 bars = 4,680 labeled feature rows with associated trade outcomes. That is enough to train a gradient boosting regime classifier and a meta-label signal scorer.
+
+Code Written in V1 That Requires Zero Rewriting in V2
+V1 Component	V2 Role	Notes
+engine/features.py	Unchanged — same features feed the ML model	Add new features as columns, existing ones stay
+engine/state_writer.py	Unchanged — ML model outputs same JSON schema	Only model_version field changes
+engine/session_context.py	Unchanged — calendar and prior session logic is stable	
+runners/run_scheduled.py	Unchanged — calls StateEngine.run_once() identically	
+runners/run_service.py	Unchanged — wraps same StateEngine	
+ninjatrader/RAFTS_MNQ.cs	Unchanged — reads same JSON schema	NT8 code never needs to know if V1 or V2
+All log schemas	Extended — add ML-specific fields as new columns	Append only, backward compatible
+Code That Changes in V2
+V1 Component	V2 Change	Impact
+engine/regime.py	Replace rule-based logic with XGBoostRegimeClassifier.predict()	Drop-in replacement; same output format
+engine/policy.py	Add LightGBM signal scorer alongside rule-based confidence	Confidence field now comes from ML, not rules
+config/regimes.yaml	Add ML model path, threshold configs	No structural change
+engine/state_engine.py	Load ML models at __init__, call them in run_once()	Small addition, no restructuring
+The V2 Upgrade Procedure
+1. After 60+ sessions of V1 data:
+   a. Load signal_log.csv into pandas
+   b. Merge with trade_log.csv on timestamp to get trade outcomes
+   c. Label each signal row with trade outcome if a trade was taken (else NaN)
+   d. Train XGBoost regime classifier on V1 rule-based labels as initial ground truth
+   e. Train LightGBM signal scorer on trade outcome labels
+   f. Validate with walk-forward folds on the 60-session dataset
+   
+2. Replace engine/regime.py internals with model.predict() call
+3. Replace confidence scoring in engine/policy.py with model scorer
+4. Update config to point to model files
+5. Run V2 in SIM for 10 sessions alongside V1 in replay to compare outputs
+6. If V2 outputs agree with V1 on clear regime days, deploy V2
+The upgrade is a contained swap of two files. NT8 never changes. The log schema never changes. The state file schema never changes.
+
+SECTION L — IMMEDIATE NEXT DELIVERABLES
+Here are the next 3 prompts to send, in this exact order:
+
+Prompt 1 — Repo Skeleton and Config Files:
+
+Generate the complete file and folder skeleton for the RAFTS MVP Python project. Create all empty __init__.py files, the full requirements.txt, and the complete contents of all four config YAML files: config/instruments.yaml, config/risk.yaml, config/regimes.yaml, and config/paths.yaml. Also generate config/loader.py that reads all four YAML files and returns a single typed RAFTSConfig dataclass. Use the exact schema, field names, and default values from the RAFTS MVP specification. Include inline comments explaining every config parameter. The project uses Python 3.10+.
+
+Prompt 2 — Python MVP State Generator:
+
+Generate the complete Python source code for the RAFTS MVP state generator. This includes: data/feed.py, engine/features.py (all 12 V1 features), engine/regime.py (3-class rule-based classifier with exact thresholds from spec), engine/policy.py (3 policies with signal confidence scoring), engine/state_writer.py (atomic JSON write), engine/session_context.py (calendar loader and prior session loader), and engine/state_engine.py (orchestrator). Then generate runners/run_scheduled.py. The StateEngine must expose only initialize_session(), run_once(), and finalize_session(). The runner must call these and nothing else. Include docstrings and type hints throughout. All file paths must be read from the RAFTSConfig object, not hardcoded.
+
+Prompt 3 — NinjaTrader 8 Strategy:
+
+Generate the complete NinjaTrader 8 C# strategy file RAFTS_MNQ.cs for the RAFTS MVP. It must: (1) read model_state.json on every 5-minute bar close and validate freshness (reject if older than 10 minutes), (2) implement the complete risk engine with all tier-based daily lockouts, per-trade dollar limits, max trades per day, consecutive loss streak logic, and session-end flatten at 3:55 PM Eastern, (3) execute MOMENTUM entries when regime is TREND and MEANREV entries when regime is RANGE, using ATR-based stops and targets with exact formulas from the spec, (4) write all required fields to trade_log.csv on each trade completion and signal_log.csv on each bar close, (5) enter FAILSAFE no-trade mode when state file is missing, stale, or malformed, and automatically recover when a valid fresh file appears. Use NinjaTrader 8 NinjaScript conventions throughout. Include a parameter for the state file path so it can be configured from the NT8 strategy settings panel.
