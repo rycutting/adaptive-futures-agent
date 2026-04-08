@@ -30,7 +30,8 @@ REQUIRED_FIELDS: tuple[str, ...] = (
     "integration_meta",
 )
 
-# Helpful defaults for keys that are usually object-shaped in this integration contract.
+# Helpful defaults for keys that are usually object-shaped
+# in this integration contract.
 OBJECT_DEFAULTS: dict[str, dict[str, Any]] = {
     "regime": {},
     "event_state": {},
@@ -48,7 +49,10 @@ def configure_default_logging(level: int = logging.INFO) -> None:
     if not root_logger.handlers:
         logging.basicConfig(
             level=level,
-            format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+            format=(
+                "%(asctime)s | %(levelname)s | "
+                "%(name)s | %(message)s"
+            ),
         )
 
 
@@ -66,7 +70,9 @@ def write_decision_response(
         True if write succeeded, False otherwise.
     """
     if not isinstance(decision, dict):
-        logger.error("Decision write failed: payload must be a dict/object.")
+        logger.error(
+            "Decision write failed: payload must be a dict/object."
+        )
         return False
 
     prepared_decision = _prepare_decision(decision)
@@ -79,20 +85,23 @@ def write_decision_response(
 
 def _prepare_decision(decision: dict[str, Any]) -> dict[str, Any] | None:
     """Normalize and validate payload shape for Version 1 contract."""
-    normalized = dict(
-        decision)  # shallow copy so caller data is not modified in-place
+    normalized = dict(decision)
 
     # Fill object-like keys with empty dict defaults if omitted.
     for field, default_value in OBJECT_DEFAULTS.items():
-        normalized.setdefault(field, default_value)
+        normalized.setdefault(field, default_value.copy())
 
     if not _validate_decision(normalized):
         return None
 
-    # Keep output key order stable for readability/logging/debugging.
-    ordered = {field: normalized[field] for field in REQUIRED_FIELDS}
+    # Keep output key order stable for readability,
+    # logging, and debugging.
+    ordered = {
+        field: normalized[field] for field in REQUIRED_FIELDS
+    }
 
-    # Preserve any additional fields (future-friendly, while keeping required keys first).
+    # Preserve any additional fields while keeping
+    # required keys first.
     for key, value in normalized.items():
         if key not in ordered:
             ordered[key] = value
@@ -103,26 +112,47 @@ def _prepare_decision(decision: dict[str, Any]) -> dict[str, Any] | None:
 def _validate_decision(decision: dict[str, Any]) -> bool:
     """Run basic, practical schema checks for Version 1."""
     missing_fields = [
-        field for field in REQUIRED_FIELDS if field not in decision]
+        field for field in REQUIRED_FIELDS
+        if field not in decision
+    ]
     if missing_fields:
         logger.error(
-            "Decision validation failed: missing required fields: %s",
+            (
+                "Decision validation failed: "
+                "missing required fields: %s"
+            ),
             ", ".join(missing_fields),
         )
         return False
 
-    for field in ("timestamp_et", "source_market_timestamp_et", "instrument", "decision_status"):
+    string_fields = (
+        "timestamp_et",
+        "source_market_timestamp_et",
+        "instrument",
+        "decision_status",
+    )
+    for field in string_fields:
         value = decision.get(field)
         if not isinstance(value, str) or not value.strip():
             logger.error(
-                "Decision validation failed: field '%s' must be a non-empty string.", field)
+                (
+                    "Decision validation failed: field '%s' "
+                    "must be a non-empty string."
+                ),
+                field,
+            )
             return False
 
     for field in OBJECT_DEFAULTS:
         value = decision.get(field)
         if not isinstance(value, dict):
             logger.error(
-                "Decision validation failed: field '%s' must be an object/dict.", field)
+                (
+                    "Decision validation failed: field '%s' "
+                    "must be an object/dict."
+                ),
+                field,
+            )
             return False
 
     return True
@@ -131,33 +161,54 @@ def _validate_decision(decision: dict[str, Any]) -> bool:
 def _atomic_write_json(path: Path, payload: dict[str, Any]) -> bool:
     """Write JSON atomically via temporary file + replace.
 
-    On most modern filesystems, Path.replace() is atomic when source and target are
-    on the same filesystem, which is why the temp file is created in the target folder.
+    On most modern filesystems, Path.replace() is atomic when
+    source and target are on the same filesystem, which is why
+    the temp file is created in the target folder.
     """
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
     except OSError as exc:
         logger.error(
-            "Decision write failed: could not create parent directory for %s: %s", path, exc)
+            (
+                "Decision write failed: could not create "
+                "parent directory for %s: %s"
+            ),
+            path,
+            exc,
+        )
         return False
 
     temp_path = path.with_name(f".{path.name}.tmp")
 
     try:
         with temp_path.open("w", encoding="utf-8") as temp_file:
-            json.dump(payload, temp_file, indent=2, ensure_ascii=False)
+            json.dump(
+                payload,
+                temp_file,
+                indent=2,
+                ensure_ascii=False,
+            )
             temp_file.write("\n")
         temp_path.replace(path)
         logger.info("Decision response written: %s", path)
         return True
     except OSError as exc:
-        logger.error("Decision write failed for %s: %s", path, exc)
+        logger.error(
+            "Decision write failed for %s: %s",
+            path,
+            exc,
+        )
         _cleanup_temp_file(temp_path)
         return False
     except TypeError as exc:
         # Raised if payload contains non-JSON-serializable values.
         logger.error(
-            "Decision write failed: payload is not JSON serializable: %s", exc)
+            (
+                "Decision write failed: payload is not "
+                "JSON serializable: %s"
+            ),
+            exc,
+        )
         _cleanup_temp_file(temp_path)
         return False
 
@@ -169,7 +220,10 @@ def _cleanup_temp_file(temp_path: Path) -> None:
             temp_path.unlink()
     except OSError as exc:
         logger.warning(
-            "Could not remove temp decision file %s: %s", temp_path, exc)
+            "Could not remove temp decision file %s: %s",
+            temp_path,
+            exc,
+        )
 
 
 __all__ = [
