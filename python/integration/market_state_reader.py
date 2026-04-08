@@ -38,15 +38,21 @@ def configure_default_logging(level: int = logging.INFO) -> None:
     if not root_logger.handlers:
         logging.basicConfig(
             level=level,
-            format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+            format=(
+                "%(asctime)s | %(levelname)s | "
+                "%(name)s | %(message)s"
+            ),
         )
 
 
-def read_market_state(file_path: str | Path = "market_state.json") -> dict[str, Any] | None:
+def read_market_state(
+    file_path: str | Path = "market_state.json",
+) -> dict[str, Any] | None:
     """Read, parse, and validate market state JSON.
 
     Args:
-        file_path: Path to market_state.json (absolute or relative).
+        file_path: Path to market_state.json
+            (absolute or relative).
 
     Returns:
         A validated market-state dictionary when successful.
@@ -75,18 +81,29 @@ def _read_json_file(path: Path) -> dict[str, Any] | None:
         return None
 
     try:
-        with path.open("r", encoding="utf-8") as f:
-            payload = json.load(f)
+        with path.open("r", encoding="utf-8") as file_handle:
+            payload = json.load(file_handle)
     except json.JSONDecodeError as exc:
-        logger.warning("Invalid JSON in market state file %s: %s", path, exc)
+        logger.warning(
+            "Invalid JSON in market state file %s: %s",
+            path,
+            exc,
+        )
         return None
     except OSError as exc:
-        logger.warning("Unable to read market state file %s: %s", path, exc)
+        logger.warning(
+            "Unable to read market state file %s: %s",
+            path,
+            exc,
+        )
         return None
 
     if not isinstance(payload, dict):
         logger.warning(
-            "Invalid market state format in %s: expected top-level object, got %s",
+            (
+                "Invalid market state format in %s: "
+                "expected top-level object, got %s"
+            ),
             path,
             type(payload).__name__,
         )
@@ -95,19 +112,27 @@ def _read_json_file(path: Path) -> dict[str, Any] | None:
     return payload
 
 
-def _validate_market_state(payload: dict[str, Any], source_path: Path) -> bool:
+def _validate_market_state(
+    payload: dict[str, Any],
+    source_path: Path,
+) -> bool:
     """Check required fields and simple Version 1 constraints."""
     missing_fields = [
-        field for field in REQUIRED_FIELDS if field not in payload]
+        field for field in REQUIRED_FIELDS if field not in payload
+    ]
     if missing_fields:
         logger.warning(
-            "Market state validation failed (%s): missing required fields: %s",
+            (
+                "Market state validation failed (%s): "
+                "missing required fields: %s"
+            ),
             source_path,
             ", ".join(missing_fields),
         )
         return False
 
-    # Keep type checks pragmatic for V1: just confirm key nested structures are dicts.
+    # Keep type checks pragmatic for V1:
+    # just confirm key nested structures are dicts.
     nested_dict_fields = (
         "price",
         "indicators",
@@ -119,31 +144,48 @@ def _validate_market_state(payload: dict[str, Any], source_path: Path) -> bool:
     for field in nested_dict_fields:
         if not isinstance(payload[field], dict):
             logger.warning(
-                "Market state validation failed (%s): field '%s' must be an object/dict.",
+                (
+                    "Market state validation failed (%s): "
+                    "field '%s' must be an object/dict."
+                ),
                 source_path,
                 field,
             )
             return False
 
-    # Light-touch scalar checks to catch empty or obviously bad values.
-    scalar_string_fields = ("timestamp_et", "instrument",
-                            "bar_interval", "session_phase")
+    # Light-touch scalar checks to catch
+    # empty or obviously bad values.
+    scalar_string_fields = (
+        "timestamp_et",
+        "instrument",
+        "bar_interval",
+        "session_phase",
+    )
     for field in scalar_string_fields:
         value = payload.get(field)
         if not isinstance(value, str) or not value.strip():
             logger.warning(
-                "Market state validation failed (%s): field '%s' must be a non-empty string.",
+                (
+                    "Market state validation failed (%s): "
+                    "field '%s' must be a non-empty string."
+                ),
                 source_path,
                 field,
             )
             return False
 
-    numeric_fields = ("time_since_open_minutes", "time_until_close_minutes")
+    numeric_fields = (
+        "time_since_open_minutes",
+        "time_until_close_minutes",
+    )
     for field in numeric_fields:
         value = payload.get(field)
         if not isinstance(value, (int, float)):
             logger.warning(
-                "Market state validation failed (%s): field '%s' must be numeric.",
+                (
+                    "Market state validation failed (%s): "
+                    "field '%s' must be numeric."
+                ),
                 source_path,
                 field,
             )
@@ -152,4 +194,8 @@ def _validate_market_state(payload: dict[str, Any], source_path: Path) -> bool:
     return True
 
 
-__all__ = ["REQUIRED_FIELDS", "configure_default_logging", "read_market_state"]
+__all__ = [
+    "REQUIRED_FIELDS",
+    "configure_default_logging",
+    "read_market_state",
+]
