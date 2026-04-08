@@ -109,7 +109,7 @@ namespace NinjaTrader.NinjaScript.Strategies
                 IsOverlay            = false;
                 IsUnmanaged          = false;   // managed order API
 
-                IntegrationFolder    = @"C:\AdaptiveFutures\integration";
+                IntegrationFolder    = @"C:\Users\Ryan\OneDrive\Adaptive_Futures_Agent\runtime\integration";
                 MaxDecisionAgeSeconds = 10;
                 NoTradeBufferMinutes = 15;
                 AtrFastPeriod        = 14;
